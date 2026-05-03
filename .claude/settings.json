@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(qmake6 -query QT_HOST_BINS)",
+      "Read(//usr/lib/qt6/bin/**)",
+      "Read(//usr/bin/**)",
+      "Bash(rm -rf /tmp/dtk2w-prf-test)",
+      "Bash(mkdir -p /tmp/dtk2w-prf-test)",
+      "Read(//tmp/**)",
+      "Bash(qmake6 /home/char/Desktop/Repository/GXDE/dtk2widget/dtkwidget.pro PREFIX=/usr LIB_INSTALL_DIR=/usr/lib/x86_64-linux-gnu)"
+    ]
+  }
+}

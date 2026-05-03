@@ -1,6 +1,8 @@
 #ifndef XEVENTMONITOR_P_H
 #define XEVENTMONITOR_P_H
 
+// 请阅读doc/DBus.md
+
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QVariant>

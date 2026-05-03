@@ -8,6 +8,8 @@
 #include <QRegion>
 #include <QScreen>
 
+// #include <com_deepin_api_xeventmonitor.h>
+// 关于为何不include原头文件，请阅读doc/DBus.md
 #include "xeventmonitor_p.h"
 
 DCORE_USE_NAMESPACE

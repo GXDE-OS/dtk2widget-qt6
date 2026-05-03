@@ -13,10 +13,12 @@ BASENAME = $$first(BASENAME)
 isEmpty(DTK_NO_TRANSLATION) {
 #    system(lupdate $$_PRO_FILE_) | error("Failed to lupdate")
 
+    LRELEASE_BIN = $$[QT_HOST_BINS]/lrelease
+    !exists($$LRELEASE_BIN): LRELEASE_BIN = lrelease-qt6
     TRANSLATIONS = $$files($$ROOT_DIR/translations/*.ts)
     for(tsfile, TRANSLATIONS) {
         qmfile = $$replace(tsfile, .ts$, .qm)
-        system(lrelease $$tsfile -qm $$qmfile) | error("Failed to lrelease")
+        system($$LRELEASE_BIN $$tsfile -qm $$qmfile) | error("Failed to lrelease")
     }
 
     # create static translations qrc file
