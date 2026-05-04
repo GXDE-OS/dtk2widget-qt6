@@ -1419,7 +1419,11 @@ void DSimpleListView::selectNextItemWithOffset(int scrollOffset)
         }
 
         if (lastIndex != -1) {
+#ifdef __i386__
+            lastIndex = std::min(d->renderItems->count() - 1, (int)lastIndex + scrollOffset);
+#else
             lastIndex = std::min(d->renderItems->count() - 1, (long long)lastIndex + scrollOffset);
+#endif
 
             clearSelections(false);
 
@@ -1577,9 +1581,17 @@ void DSimpleListView::shiftSelectNextItemWithOffset(int scrollOffset)
 
             if (firstIndex == lastSelectionIndex) {
                 selectionStartIndex = firstIndex;
+#ifdef __i386__
+                selectionEndIndex = std::min(d->renderItems->count() - 1, (int)lastIndex + scrollOffset);
+#else
                 selectionEndIndex = std::min(d->renderItems->count() - 1, (long long)lastIndex + scrollOffset);
+#endif
             } else {
+#ifdef __i386__
+                selectionStartIndex = std::min(d->renderItems->count() - 1, (int)firstIndex + scrollOffset);
+#else
                 selectionStartIndex = std::min(d->renderItems->count() - 1, (long long)firstIndex + scrollOffset);
+#endif
                 selectionEndIndex = lastIndex;
             }
 
