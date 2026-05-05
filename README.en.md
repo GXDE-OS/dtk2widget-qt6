@@ -168,7 +168,7 @@ If you only want the library but not the `deb` package, then do the following:
 
 This would be recommended if you are using debian-based distros.
 
-1. Clone the repository and enter the project root: 克隆仓库后进入项目根目录（**注意**：必须位于 `debian/` 文件夹的父目录下）：
+1. Clone the repository and enter the project root: 
    ```bash
    git clone https://gitee.com/GXDE-OS/dtk2widget-qt6.git
    cd dtk2widget-qt6
