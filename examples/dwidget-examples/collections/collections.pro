@@ -82,6 +82,7 @@ else:unix: LIBS += -L$$OUT_PWD/../../../src -ldtk2widget
 INCLUDEPATH += $$PWD/../../../src
 INCLUDEPATH += $$PWD/../../../src/widgets
 INCLUDEPATH += $$PWD/../../../src/util
+INCLUDEPATH += /usr/include/dtk2/DWidget
 DEPENDPATH += $$PWD/../../../src
 
 CONFIG(debug, debug|release) {
