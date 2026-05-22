@@ -62,7 +62,7 @@
 <!-- ABOUT THE PROJECT -->
 ## 关于项目
 
-![Collections的截图，使用此移植库](./doc/screenshots/collections.png)
+![Containers的截图，使用此移植库](./doc/screenshots/containers.png)
 
 喜欢DTK2的外观又想要Qt6？没问题！
 

@@ -61,7 +61,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About This Project
 
-![Scrrenshot of *Collections*, using this library](./doc/screenshots/collections.png)
+![Scrrenshot of *Containers*, using this library](./doc/screenshots/containers.png)
 
 Love the apperance of DTK2 but prefer Qt6? We got you!
 
