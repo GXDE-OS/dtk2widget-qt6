@@ -59,6 +59,11 @@ HEADERS += $$PWD/dslider.h\
     $$PWD/dconstants.h \
     $$PWD/dseparatorhorizontal.h \
     $$PWD/dseparatorvertical.h \
+    $$PWD/dframe.h \
+    $$PWD/dcardwidget.h \
+    $$PWD/dfloatingwidget.h \
+    $$PWD/dfloatingmessage.h \
+    $$PWD/dbackgroundgroup.h \
     $$PWD/dbaseline.h \
     $$PWD/dheaderline.h \
     $$PWD/dbaseexpand.h \
@@ -68,6 +73,8 @@ HEADERS += $$PWD/dslider.h\
     $$PWD/dbuttonlist.h \
     $$PWD/dimagebutton.h \
     $$PWD/dtextbutton.h \
+    $$PWD/dhoverbutton.h \
+    $$PWD/dicontextbutton.h \
     $$PWD/dloadingindicator.h \
     $$PWD/dsearchedit.h \
     $$PWD/dswitchbutton.h \
@@ -83,6 +90,7 @@ HEADERS += $$PWD/dslider.h\
     $$PWD/dsimplelistitem.h \
     $$PWD/dexpandgroup.h \
     $$PWD/dlabel.h \
+    $$PWD/dtypographylabel.h \
     $$PWD/dlinkbutton.h \
     $$PWD/dscrollbar.h \
     $$PWD/dscrollarea.h \
@@ -108,6 +116,7 @@ HEADERS += $$PWD/dslider.h\
     $$PWD/dplatformwindowhandle.h \
     $$PWD/dmainwindow.h \
     $$PWD/dblureffectwidget.h \
+    $$PWD/dblursurface.h \
     $$PWD/dpageindicator.h \
     $$PWD/dclipeffectwidget.h \
     $$PWD/dgraphicsclipeffect.h \
@@ -119,6 +128,8 @@ HEADERS += $$PWD/dslider.h\
     $$PWD/dspinner.h \
     $$PWD/dcrumbedit.h \
     $$PWD/dtabbar.h \
+    $$PWD/dtabbedstackwidget.h \
+    $$PWD/ddocumenttabbar.h \
     $$PWD/dsuggestbutton.h \
     $$PWD/dstyleoption.h \
     $$PWD/dtoast.h \
@@ -144,6 +155,11 @@ SOURCES += $$PWD/dtkwidget_init.cpp \
     $$PWD/dapplication.cpp \
     $$PWD/dseparatorhorizontal.cpp \
     $$PWD/dseparatorvertical.cpp \
+    $$PWD/dframe.cpp \
+    $$PWD/dcardwidget.cpp \
+    $$PWD/dfloatingwidget.cpp \
+    $$PWD/dfloatingmessage.cpp \
+    $$PWD/dbackgroundgroup.cpp \
     $$PWD/dbaseline.cpp \
     $$PWD/dheaderline.cpp \
     $$PWD/dbaseexpand.cpp \
@@ -153,6 +169,8 @@ SOURCES += $$PWD/dtkwidget_init.cpp \
     $$PWD/dbuttonlist.cpp \
     $$PWD/dimagebutton.cpp \
     $$PWD/dtextbutton.cpp \
+    $$PWD/dhoverbutton.cpp \
+    $$PWD/dicontextbutton.cpp \
     $$PWD/dloadingindicator.cpp \
     $$PWD/dsearchedit.cpp \
     $$PWD/dswitchbutton.cpp\
@@ -167,6 +185,7 @@ SOURCES += $$PWD/dtkwidget_init.cpp \
     $$PWD/dsimplelistitem.cpp \
     $$PWD/dexpandgroup.cpp \
     $$PWD/dlabel.cpp \
+    $$PWD/dtypographylabel.cpp \
     $$PWD/dlinkbutton.cpp \
     $$PWD/dscrollbar.cpp \
     $$PWD/dscrollarea.cpp \
@@ -192,6 +211,7 @@ SOURCES += $$PWD/dtkwidget_init.cpp \
     $$PWD/dplatformwindowhandle.cpp \
     $$PWD/dmainwindow.cpp \
     $$PWD/dblureffectwidget.cpp \
+    $$PWD/dblursurface.cpp \
     $$PWD/dpageindicator.cpp \
     $$PWD/dclipeffectwidget.cpp \
     $$PWD/dgraphicsclipeffect.cpp \
@@ -202,6 +222,8 @@ SOURCES += $$PWD/dtkwidget_init.cpp \
     $$PWD/dspinner.cpp \
     $$PWD/dcrumbedit.cpp \
     $$PWD/dtabbar.cpp \
+    $$PWD/dtabbedstackwidget.cpp \
+    $$PWD/ddocumenttabbar.cpp \
     $$PWD/dsuggestbutton.cpp \
     $$PWD/dstyleoption.cpp \
     $$PWD/dtoast.cpp \
@@ -244,6 +266,7 @@ includes.files += \
     $$PWD/DAboutDialog \
     $$PWD/DApplication \
     $$PWD/DBlurEffectWidget \
+    $$PWD/DBlurSurface \
     $$PWD/DClipEffectWidget \
     $$PWD/DGraphicsDropShadowEffect \
     $$PWD/DPlatformWindowHandle \
@@ -263,6 +286,8 @@ includes.files += \
     $$PWD/DSpinner \
     $$PWD/DCrumbEdit \
     $$PWD/DTabBar \
+    $$PWD/DTabbedStackWidget \
+    $$PWD/DDocumentTabBar \
     $$PWD/DSuggestButton \
     $$PWD/DStyleOption \
     $$PWD/DToast \
@@ -276,5 +301,15 @@ includes.files += \
     $$PWD/DApplicationHelper \
     $$PWD/DMessageBox \
     $$PWD/DToolButton \
+    $$PWD/DIconButton \
     $$PWD/DProgressBar \
+    $$PWD/DFrame \
+    $$PWD/DCardWidget \
+    $$PWD/DFloatingWidget \
+    $$PWD/DFloatingMessage \
+    $$PWD/DBackgroundGroup \
+    $$PWD/DTypographyLabel \
+    $$PWD/DSectionTitle \
+    $$PWD/DHoverButton \
+    $$PWD/DIconTextButton \
     $$PWD/DApplicationSettings

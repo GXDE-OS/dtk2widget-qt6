@@ -1,0 +1,6 @@
+#ifndef DFRAME_H
+#define DFRAME_H
+
+#include "dframe.h"
+
+#endif // DFRAME_H

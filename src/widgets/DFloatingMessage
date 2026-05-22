@@ -1,0 +1,6 @@
+#ifndef DFLOATINGMESSAGE_H
+#define DFLOATINGMESSAGE_H
+
+#include "dfloatingmessage.h"
+
+#endif // DFLOATINGMESSAGE_H

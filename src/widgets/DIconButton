@@ -1,0 +1,6 @@
+#ifndef DICONBUTTON_H
+#define DICONBUTTON_H
+
+#include "dbuttonlist.h"
+
+#endif // DICONBUTTON_H

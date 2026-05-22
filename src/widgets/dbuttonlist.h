@@ -20,6 +20,8 @@
 
 #include <QListWidget>
 #include <QPushButton>
+#include <QStyle>
+#include <QIcon>
 #include "dtkwidget_global.h"
 
 class QButtonGroup;
@@ -27,19 +29,44 @@ class QLabel;
 class QPoint;
 class QResizeEvent;
 class QEvent;
+class QKeyEvent;
 
 DWIDGET_BEGIN_NAMESPACE
 
-class DIconButton : public QPushButton
-{
+class LIBDTKWIDGETSHARED_EXPORT DIconButton : public QPushButton {
     Q_OBJECT
+
+    Q_PROPERTY(bool circleEnabled
+        READ circleEnabled
+        WRITE setCircleEnabled
+    )
+
+    Q_PROPERTY(bool newNotification
+        READ hasNewNotification
+        WRITE setNewNotification
+    )
+
 public:
-    DIconButton(const QString &Icon, const QString &text, QWidget *parent = Q_NULLPTR);
+    explicit DIconButton(QWidget* parent = Q_NULLPTR);
+    explicit DIconButton(const QIcon& icon, QWidget* parent = Q_NULLPTR);
+    explicit DIconButton(QStyle::StandardPixmap iconType,
+        QWidget* parent = Q_NULLPTR);
+    DIconButton(const QString& Icon, const QString& text,
+        QWidget* parent = Q_NULLPTR);
+
+    bool circleEnabled() const;
+    bool hasNewNotification() const;
+
+public Q_SLOTS:
+    void setIcon(const QIcon& icon);
+    void setIcon(QStyle::StandardPixmap iconType);
+    void setCircleEnabled(bool enabled);
+    void setNewNotification(bool hasNotification);
 
     void initIconLabel();
     void initConnect();
     void setIconLeftMargin(int leftMargin);
-    void setIconLabel(const QString &icon);
+    void setIconLabel(const QString& icon);
     void hideIconLabel();
     void updateStyle();
 
@@ -48,30 +75,35 @@ Q_SIGNALS:
     void mouseLeaved(QString label);
 
 protected:
-    void resizeEvent(QResizeEvent *event);
-    void enterEvent(QEnterEvent *event);
-    void leaveEvent(QEvent *event);
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent* event);
+    void enterEvent(QEnterEvent* event);
+    void leaveEvent(QEvent* event);
+    void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
 
 private:
     QLabel *m_iconLabel;
     QString m_icon;
     QString m_text;
+    bool m_circleEnabled = false;
+    bool m_newNotification = false;
 };
 
-class LIBDTKWIDGETSHARED_EXPORT DButtonList : public QListWidget
-{
+class LIBDTKWIDGETSHARED_EXPORT DButtonList : public QListWidget {
     Q_OBJECT
+
 public:
     Q_DECL_DEPRECATED explicit DButtonList(QWidget *parent = Q_NULLPTR);
     ~DButtonList();
 
     void initMargins(int leftMargin, int rightMargin, int imageLeftMargin);
-    DIconButton *getButtonByIndex(int index);
+    DIconButton* getButtonByIndex(int index);
 
 public Q_SLOTS:
-    void addButton(const QString &label);
-    void addButton(const QString &label, int index);
-    void addButtons(const QStringList &listLabels);
+    void addButton(const QString& label);
+    void addButton(const QString& label, int index);
+    void addButtons(const QStringList& listLabels);
     void setItemHeight(int height);
     void setItemWidth(int width);
     void setItemSize(int width, int height);
@@ -89,7 +121,7 @@ Q_SIGNALS:
     void buttonMouseLeaved(QString label);
 
 private:
-    QButtonGroup *m_buttonGroup = NULL;
+    QButtonGroup* m_buttonGroup = NULL;
 
     void initConnect();
 
@@ -101,4 +133,4 @@ private:
 
 DWIDGET_END_NAMESPACE
 
-#endif // DBUTTONLIST_H
+#endif  // DBUTTONLIST_H

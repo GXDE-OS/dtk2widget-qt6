@@ -1,0 +1,6 @@
+#ifndef DBACKGROUNDGROUP_H
+#define DBACKGROUNDGROUP_H
+
+#include "dbackgroundgroup.h"
+
+#endif // DBACKGROUNDGROUP_H

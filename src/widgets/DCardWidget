@@ -1,0 +1,6 @@
+#ifndef DCARDWIDGET_H
+#define DCARDWIDGET_H
+
+#include "dcardwidget.h"
+
+#endif // DCARDWIDGET_H

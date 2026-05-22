@@ -1,0 +1,6 @@
+#ifndef DSECTIONTITLE_H
+#define DSECTIONTITLE_H
+
+#include "dtypographylabel.h"
+
+#endif // DSECTIONTITLE_H

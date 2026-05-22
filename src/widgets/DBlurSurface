@@ -1,0 +1,6 @@
+#ifndef DBLURSURFACE_H
+#define DBLURSURFACE_H
+
+#include "dblursurface.h"
+
+#endif // DBLURSURFACE_H

@@ -1,0 +1,6 @@
+#ifndef DTYPOGRAPHYLABEL_H
+#define DTYPOGRAPHYLABEL_H
+
+#include "dtypographylabel.h"
+
+#endif // DTYPOGRAPHYLABEL_H

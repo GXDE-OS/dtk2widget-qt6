@@ -1,0 +1,6 @@
+#ifndef DTABBEDSTACKWIDGET_H
+#define DTABBEDSTACKWIDGET_H
+
+#include "dtabbedstackwidget.h"
+
+#endif // DTABBEDSTACKWIDGET_H

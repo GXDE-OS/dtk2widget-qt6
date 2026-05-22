@@ -1,0 +1,6 @@
+#ifndef DFLOATINGWIDGET_H
+#define DFLOATINGWIDGET_H
+
+#include "dfloatingwidget.h"
+
+#endif // DFLOATINGWIDGET_H

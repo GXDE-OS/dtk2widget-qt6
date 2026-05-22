@@ -1,0 +1,6 @@
+#ifndef DICONTEXTBUTTON_H
+#define DICONTEXTBUTTON_H
+
+#include "dicontextbutton.h"
+
+#endif // DICONTEXTBUTTON_H

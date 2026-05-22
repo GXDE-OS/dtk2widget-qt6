@@ -1,0 +1,6 @@
+#ifndef DDOCUMENTTABBAR_H
+#define DDOCUMENTTABBAR_H
+
+#include "ddocumenttabbar.h"
+
+#endif // DDOCUMENTTABBAR_H

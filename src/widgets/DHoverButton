@@ -1,0 +1,6 @@
+#ifndef DHOVERBUTTON_H
+#define DHOVERBUTTON_H
+
+#include "dhoverbutton.h"
+
+#endif // DHOVERBUTTON_H

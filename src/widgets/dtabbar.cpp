@@ -130,8 +130,12 @@ public:
         connect(addButton, &DTabBarAddButton::clicked,
                 qq, &DTabBar::tabAddRequested);
         connect(this, &QTabBar::tabMoved, this, [this] (int from, int to) {
-            tabMinimumSize.move(from, to);
-            tabMaximumSize.move(from, to);
+            if (from >= 0 && from < tabMinimumSize.size()
+                && to >= 0 && to < tabMinimumSize.size())
+                tabMinimumSize.move(from, to);
+            if (from >= 0 && from < tabMaximumSize.size()
+                && to >= 0 && to < tabMaximumSize.size())
+                tabMaximumSize.move(from, to);
 
             if (dd()->validIndex(ghostTabIndex)) {
                 if (from == ghostTabIndex)
@@ -313,27 +317,44 @@ public:
 
 void DTabBarPrivate::startDrag(int tabIndex)
 {
+    // 保存 guard 防止 exec() 期间 this 或外层 DTabBar 被事件循环删除
+    QPointer<DTabBarPrivate> thisGuard(this);
+    QPointer<DTabBar> qGuard(q_func());
+
     Qt::DropAction action = drag->exec(Qt::MoveAction | Qt::CopyAction, Qt::CopyAction);
+
+    // exec() 返回后，检查 this 和 DTabBar 是否还存活
+    if (!thisGuard || !qGuard)
+        return;
 
     Q_EMIT q_func()->dragEnd(action);
 
-    if (action == Qt::IgnoreAction) {
-        Q_EMIT q_func()->tabReleaseRequested(tabIndex);
-    } else if (drag->target() != this) {
-        if (DTabBarPrivate *tbp = qobject_cast<DTabBarPrivate*>(drag->target()))
-            Q_EMIT q_func()->tabDroped(tabIndex, action, tbp->q_func());
-        else
-            Q_EMIT q_func()->tabDroped(tabIndex, action, drag->target());
+    if (drag) {
+        if (action == Qt::IgnoreAction) {
+            Q_EMIT q_func()->tabReleaseRequested(tabIndex);
+        } else if (drag->target() != this) {
+            if (DTabBarPrivate *tbp = qobject_cast<DTabBarPrivate*>(drag->target()))
+                Q_EMIT q_func()->tabDroped(tabIndex, action, tbp->q_func());
+            else
+                Q_EMIT q_func()->tabDroped(tabIndex, action, drag->target());
+        }
+
+        drag->setProperty("_d_DTabBarPrivate_drity", true);
     }
 
-    drag->setProperty("_d_DTabBarPrivate_drity", true);
+    // 再次检查，因为上面的信号处理可能删除了 this
+    if (!thisGuard)
+        return;
 
     QTabBarPrivate *d = reinterpret_cast<QTabBarPrivate *>(qGetPtrHelper(d_ptr));
 
-    // Be safe!
-    if (d->dragInProgress && d->pressedIndex != -1) {
+    // 清理内部移动（如果在拖拽过程中意外启动了）或简单重置状态
+    if (d->dragInProgress && d->validIndex(d->pressedIndex)) {
         d->hoverRect = QRect();
         moveTabFinished(d->pressedIndex);
+    } else {
+        // 确保 pressedIndex 被重置，避免残留的按下状态
+        d->pressedIndex = -1;
     }
 }
 
@@ -493,19 +514,9 @@ void DTabBarPrivate::slide(int from, int to)
     QTabBarPrivate::Tab *tab = d->tabList[to];
 
     if (!tab->animation) {
-        //tab->animation = reinterpret_cast<QTabBarPrivate::Tab::TabBarAnimation*>(new TabBarAnimation(tab, d, this));
-        // 假设 tab->animation 是一个 std::unique_ptr<QTabBarPrivate::Tab::TabBarAnimation>
-        // 并且 TabBarAnimation 是 QTabBarPrivate::Tab::TabBarAnimation 的一个别名或实例
-
-        // 使用 std::make_unique 来创建 unique_ptr
-        // 注意：std::make_unique 是 C++14 引入的，如果您使用的是 C++11，则需要自己构造 unique_ptr
-        //tab->animation = std::make_unique<QTabBarPrivate::Tab::TabBarAnimation>(tab, d, this);
-
-        // 如果您使用的是 C++11，并且 std::make_unique 不可用，您可以这样做：
-        // tab->animation.reset(new QTabBarPrivate::Tab::TabBarAnimation(tab, d, this));
-        // 但是，注意 reset 方法会删除当前 unique_ptr 所拥有的对象（如果有的话），
-        // 并接管新分配的对象的所有权。如果 unique_ptr 已经拥有一个对象，
-        // 那么这个对象将被删除。因此，在使用 reset 之前，确保这是您想要的行为。
+        // Qt6 内部 moveTab 未创建动画，或 animation 为 unique_ptr 且已被释放，跳过动画
+        moveTabFinished(to);
+        return;
     }
     tab->animation->setStartValue(tab->dragOffset);
     tab->animation->setEndValue(0);
@@ -839,7 +850,11 @@ int DTabBarPrivate::tabInsertIndexFromMouse(QPoint pos)
 
 void DTabBarPrivate::startMove(int index)
 {
+    // 防止延时回调执行时 ghost tab 已经被移除，导致 pressedIndex 设为无效索引
     if (dd()->dragInProgress)
+        return;
+
+    if (index != ghostTabIndex || !dd()->validIndex(index))
         return;
 
     dd()->pressedIndex = index;
@@ -1073,8 +1088,8 @@ void DTabBarPrivate::mouseMoveEvent(QMouseEvent *event)
         }
     }
 
-    // Start move
-    if (!d->dragInProgress && valid_pressed_index) {
+    // Start move（外部拖拽进行中时不应启动内部移动）
+    if (!drag && !d->dragInProgress && valid_pressed_index) {
         if (offset_x > startDragDistance) {
             d->dragInProgress = true;
             setupMovableTab();
@@ -1117,6 +1132,10 @@ void DTabBarPrivate::dragEnterEvent(QDragEnterEvent *e)
 
         mouseMoveEvent(&event);
     } else {
+        // 禁止其他 QTabBar 的 tab 拖入本控件
+        if (qobject_cast<QTabBar *>(e->source()))
+            return;
+
         int index = tabInsertIndexFromMouse(e->pos());
 
         if (q_func()->canInsertFromMimeData(index, e->mimeData())) {
@@ -1150,6 +1169,10 @@ void DTabBarPrivate::dragMoveEvent(QDragMoveEvent *e)
 
         mouseMoveEvent(&event);
     } else {
+        // 禁止其他 QTabBar 的 tab 拖入本控件
+        if (qobject_cast<QTabBar *>(e->source()))
+            return;
+
         autoScrollTabs(e->pos());
 
         int index = tabInsertIndexFromMouse(e->pos());
@@ -1172,6 +1195,10 @@ void DTabBarPrivate::dropEvent(QDropEvent *e)
 
         mouseReleaseEvent(&event);
     } else {
+        // 禁止其他 QTabBar 的 tab 拖入本控件
+        if (qobject_cast<QTabBar *>(e->source()))
+            return;
+
         setDragingFromOther(false);
 
         int index = tabInsertIndexFromMouse(e->pos());
@@ -1225,6 +1252,10 @@ QSize DTabBarPrivate::minimumTabSizeHint(int index) const
 
 void DTabBarPrivate::tabInserted(int index)
 {
+    // 同步 tabMinimumSize/tabMaximumSize 列表，防止 tabMoved 信号中越界崩溃
+    tabMinimumSize.insert(index, QSize());
+    tabMaximumSize.insert(index, QSize());
+
     D_Q(DTabBar);
 
     if (qApp->buildDtkVersion() > DTK_VERSION_CHECK(2, 0, 8, 1))
@@ -1235,6 +1266,12 @@ void DTabBarPrivate::tabInserted(int index)
 
 void DTabBarPrivate::tabRemoved(int index)
 {
+    // 同步 tabMinimumSize/tabMaximumSize 列表
+    if (index >= 0 && index < tabMinimumSize.size())
+        tabMinimumSize.removeAt(index);
+    if (index >= 0 && index < tabMaximumSize.size())
+        tabMaximumSize.removeAt(index);
+
     D_Q(DTabBar);
 
     if (qApp->buildDtkVersion() > DTK_VERSION_CHECK(2, 0, 8, 1))
@@ -1431,7 +1468,7 @@ int DTabBar::insertTab(int index, const QString &text)
  */
 int DTabBar::insertTab(int index, const QIcon &icon, const QString &text)
 {
-    return insertTab(index, icon, text);
+    return d_func()->insertTab(index, icon, text);
 }
 
 /*!
@@ -1804,7 +1841,12 @@ void DTabBar::startDrag(int index)
 
 void DTabBar::stopDrag(Qt::DropAction action)
 {
-    if (QBasicDrag *drag = dynamic_cast<QBasicDrag*>(QDragManager::self()->m_platformDrag)) {
+    QDragManager *manager = QDragManager::self();
+
+    if (!manager)
+        return;
+
+    if (QBasicDrag *drag = dynamic_cast<QBasicDrag*>(manager->m_platformDrag)) {
         drag->cancel();
         drag->m_executed_drop_action = action;
 
@@ -1819,6 +1861,10 @@ void DTabBar::dragEnterEvent(QDragEnterEvent *e)
 
     if (e->source() == d)
         return QWidget::dragEnterEvent(e);
+
+    // 禁止其他 QTabBar 的 tab 拖入本控件
+    if (qobject_cast<QTabBar *>(e->source()))
+        return;
 
     int index = d->tabInsertIndexFromMouse(d->mapFromParent(e->pos()));
 
@@ -1863,6 +1909,10 @@ void DTabBar::dragMoveEvent(QDragMoveEvent *e)
     if (e->source() == d)
         return QWidget::dragMoveEvent(e);
 
+    // 禁止其他 QTabBar 的 tab 拖入本控件
+    if (qobject_cast<QTabBar *>(e->source()))
+        return;
+
     int index = d->dd()->validIndex(d->ghostTabIndex) ? d->ghostTabIndex : d->tabInsertIndexFromMouse(d->mapFromParent(e->pos()));
     bool canInsert = false;
 
@@ -1899,6 +1949,10 @@ void DTabBar::dropEvent(QDropEvent *e)
 
     if (e->source() == d)
         return QWidget::dropEvent(e);
+
+    // 禁止其他 QTabBar 的 tab 拖入本控件
+    if (qobject_cast<QTabBar *>(e->source()))
+        return;
 
     d->setDragingFromOther(false);
     d->stopAutoScrollTabs();

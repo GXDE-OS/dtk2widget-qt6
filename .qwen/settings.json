@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(qmake6 *)",
+      "Bash(make *)",
+      "Bash(git checkout *)",
+      "Bash(find *)"
+    ]
+  },
+  "$version": 4
+}
