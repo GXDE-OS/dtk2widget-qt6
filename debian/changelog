@@ -1,3 +1,10 @@
+dtk2widget6 (6:6.0.2) UNRELEASED; urgency=medium
+
+  * 新增如下控件：DFrame, DCardWidget, DBackgroundGroup, DTypographyLabel, DSectionTitle, DHoverButton, DIconTextButton, DIconButton, DTabbedStackWidget, DDocumentTabBar, DFloatingMessage, DBlurSurface, DFloatingWidget
+  * 新增了以上控件的使用示例
+
+ -- CharOfString <markus_verify@126.com>  Fri, 22 May 2026 19:50:11 +0800
+
 dtk2widget6 (6:6.0.1) UNRELEASED; urgency=medium
 
   * 尝试迁移至Qt6,解决由于DBus库仍然依赖Qt5导致的无法运行问题
