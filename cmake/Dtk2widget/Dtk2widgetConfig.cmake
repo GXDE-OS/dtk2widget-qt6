@@ -1,5 +1,5 @@
-find_package(Dtk REQUIRED Core)
-set(DTK2WIDGET_INCLUDE_DIR /include/dtk2/DWidget)
+find_package(Dtk6 REQUIRED Core)
+set(DTK2WIDGET_INCLUDE_DIR /usr/include/dtk2/DWidget)
 set(DTK2WIDGET_TOOL_DIR /usr/lib/x86_64-linux-gnu/libdtk-6.0.1/D2widget/bin)
-set(Dtk2widget_LIBRARIES dtk2widget ${DtkCore_LIBRARIES})
+set(Dtk2widget_LIBRARIES dtk2widget ${Dtk6Core_LIBRARIES})
 include_directories("${DTK2WIDGET_INCLUDE_DIR}")
