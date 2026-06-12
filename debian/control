@@ -49,7 +49,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libdtk2widget6 (= ${binary:Version}),
- qt6-base-dev, libdtk6core-dev, libdtk6log-dev
+ qt6-base-dev, libdtk6core-dev, libdtk6log-dev, libdtk6gui-dev 
 Description: Deepin graphical user interface library (Qt6 port, dev files)
  Headers, pkg-config (dtk2widget.pc) and qmake module
  (qt_lib_dtk2widget.pri) for the Qt6 port of DTK 2.x.
