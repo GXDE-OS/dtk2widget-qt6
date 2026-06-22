@@ -169,25 +169,13 @@
 
 推荐使用此方式，便于安装、卸载与分发。
 
-1. 克隆仓库后进入项目根目录（**注意**：必须位于 `debian/` 文件夹的父目录下）：
-   ```bash
-   git clone https://gitee.com/GXDE-OS/dtk2widget-qt6.git
-   cd dtk2widget-qt6
-   ```
+```bash
+sudo apt install cmake fakeroot
+chmod a+x ./build-deb
+./build-deb -d
+```
 
-2. 执行打包命令：
-   ```bash
-   debuild -us -uc -b
-
-3. 构建成功后，生成的 `.deb` 文件会出现在**上一级目录**中，包含：
-   * **`libdtk2widget6_<版本号>_<架构>.deb`**: 运行时库
-   * **`libdtk2widget6-dev_<版本号>_<架构>.deb`**: devel包
-
-4. 如需清理本次打包产生的中间文件：
-   ```bash
-   cd dtk2widget-qt6
-   debuild clean   # 或者：fakeroot debian/rules clean
-   ```
+编译完成后可以使用`./build-deb -c`清理中间产物，`.deb`包可以在项目根目录的上级目录找到。
 
 <p align="right">(<a href="#readme-top">回到顶部</a>)</p>
 

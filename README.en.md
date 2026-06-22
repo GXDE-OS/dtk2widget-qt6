@@ -168,28 +168,15 @@ If you only want the library but not the `deb` package, then do the following:
 
 This would be recommended if you are using debian-based distros.
 
-1. Clone the repository and enter the project root: 
-   ```bash
-   git clone https://gitee.com/GXDE-OS/dtk2widget-qt6.git
-   cd dtk2widget-qt6
-   ```
+```bash
+sudo apt install cmake fakeroot
+chmod a+x ./build-deb
+./build-deb -d
+```
 
-> **Note**: You have to be at the parent directory of the `debian/` folder.
+You may run`./build-deb -c` to execute a cleanup.
 
-
-2. Build the package: 
-   ```bash
-   debuild -us -uc -b
-
-3. If packaging scceed, the generated `.deb` file could be found in the **parent directory**, consisting the following packages: 
-   * **`libdtk2widget6_<VERSION>_<ARCHITECTRE>.deb`**: The runtime library.
-   * **`libdtk2widget6-dev_<VERSION>_<ARCHITECTRE>.deb`**: Devel package.
-
-4. To do the cleanup: 
-   ```bash
-   cd dtk2widget-qt6
-   debuild clean   # Or: fakeroot debian/rules clean
-   ```
+The `.deb` artifact may be found in the parent directory of project root.
 
 <p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
