@@ -15,7 +15,7 @@
 
   <p align="center">
     <sup>(EXPERIMENTAL)</sup>A port to Qt6 for DTK2 Widgets<br />
-    <a href="https://gitee.com/GXDE-OS/dtk2widget-qt6/wikis"><strong>Read WIKI »</strong></a>
+    <a href="https://charofstring.cc/assets/dtk2widget-qt6_doxygen/index.html"><strong>Read WIKI »</strong></a>
     <br />
     <br />
     <a href="https://gitee.com/GXDE-OS/gxde-qt6-integration">Corresponding Qt Intergration</a>

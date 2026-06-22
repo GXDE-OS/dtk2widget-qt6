@@ -16,7 +16,7 @@
   <p align="center">
     <sup>（实验性）</sup> 对DTK2 Widget的Qt6移植
     <br />
-    <a href="https://gitee.com/GXDE-OS/dtk2widget-qt6/wikis"><strong>查看WIKI »</strong></a>
+    <a href="https://charofstring.cc/assets/dtk2widget-qt6_doxygen_zh/index.html"><strong>查看WIKI »</strong></a>
     <br />
     <br />
     <a href="https://gitee.com/GXDE-OS/gxde-qt6-integration">查看对应绑定</a>
