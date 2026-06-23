@@ -983,7 +983,7 @@ void DSimpleListView::mousePressEvent(QMouseEvent *mouseEvent)
         } else if (mouseEvent->button() == Qt::RightButton) {
             if (columnVisibles.count() == d->columnTitles.count()) {
                 QMenu *menu = new QMenu();
-                menu->setStyle(QStyleFactory::create("dlight"));
+                menu->setStyle(QStyleFactory::create("dlight2"));
 
                 for (int i = 0; i < columnVisibles.count(); i++) {
                     if (i != d->alwaysVisibleColumn) {

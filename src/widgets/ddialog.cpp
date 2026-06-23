@@ -1056,7 +1056,8 @@ void DDialog::childEvent(QChildEvent *event)
 
         QStyle *style = d->fixedStyle;
         if (!style) {
-            style = QStyleFactory::create("dlight");
+            // 在Qt6上，样式名称为dlight2
+            style = QStyleFactory::create("dlight2");
             if (style) {
                 d->fixedStyle = style;
                 style->setParent(this);

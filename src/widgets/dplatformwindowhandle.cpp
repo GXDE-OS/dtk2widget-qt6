@@ -418,6 +418,24 @@ void DPlatformWindowHandle::enableDXcbForWindow(QWidget *widget)
 
     QWindow *handle = ensureWindowHandle(widget);
 
+    // QMenu/QComboBox这样的弹出菜单不该走no-titlebar
+    // no-titlebar是依赖我们给你装饰，但是显然WM在这可不管你
+    // 直接走dxcb得了
+    if (widget->windowType() == Qt::Popup || widget->inherits("QMenu")) {
+        // 直接调用dxcb的enableDxcb函数
+        QFunctionPointer enable_dxcb = nullptr;
+
+        // 从dxcb平台插件拿enableDxcb的函数指针
+        enable_dxcb = qApp->platformFunction(_enableDxcb);
+        if (enable_dxcb) {
+            // 强制转换类型，这是接受一个QWindow*参数、返回布尔型的函数指针
+            // 最外层加一个*，解引用并且调用刚刚转换完成的函数
+            // handle就是这个QWindow*参数
+            (*reinterpret_cast<bool(*)(QWindow*)>(enable_dxcb))(handle);
+        }
+        return;
+    }
+
     enableDXcbForWindow(handle);
 }
 

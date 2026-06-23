@@ -1157,7 +1157,8 @@ bool DApplication::notify(QObject *obj, QEvent *event)
         if (QMenu *menu = qobject_cast<QMenu *>(obj)) {
             if (!menu->testAttribute(Qt::WA_SetStyle)) {
                 if (!light_style) {
-                    light_style = QStyleFactory::create("dlight");
+                    // 在Qt6上，样式名称为dlight2
+                    light_style = QStyleFactory::create("dlight2");
                 }
 
                 if (light_style) {
@@ -1175,7 +1176,7 @@ bool DApplication::notify(QObject *obj, QEvent *event)
                         || (widget->inherits("QComboBoxPrivateContainer")
                             && basePrintPropertiesDialog(widget)))) {
                 if (!light_style) {
-                    light_style = QStyleFactory::create("dlight");
+                    light_style = QStyleFactory::create("dlight2");
                 }
 
                 if (light_style) {

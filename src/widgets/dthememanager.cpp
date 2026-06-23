@@ -339,16 +339,16 @@ public:
             // if dlight or ddark style is set to default style of dde, those
             // ugly code will no longer needed.
             if (theme == "light") {
-                style = QStyleFactory::create("dlight");
+                style = QStyleFactory::create("dlight2");
                 themeName = theme;
             } else if (theme == "dark") {
-                style = QStyleFactory::create("ddark");
+                style = QStyleFactory::create("ddark2");
                 themeName = theme;
             } else if (theme == "semilight") {
-                style = QStyleFactory::create("dsemilight");
+                style = QStyleFactory::create("dsemilight2");
                 themeName = "light";
             } else if (theme == "semidark") {
-                style = QStyleFactory::create("dsemidark");
+                style = QStyleFactory::create("dsemidark2");
                 themeName = "dark";
             }
 
@@ -390,16 +390,16 @@ public:
         // if dlight or ddark style is set to default style of dde, those
         // ugly code will no longer needed.
         if (theme == "light") {
-            style = QStyleFactory::create("dlight");
+            style = QStyleFactory::create("dlight2");
             widget->setProperty("_d_dtk_theme", theme);
         } else if (theme == "dark") {
-            style = QStyleFactory::create("ddark");
+            style = QStyleFactory::create("ddark2");
             widget->setProperty("_d_dtk_theme", theme);
         } else if (theme == "semilight") {
-            style = QStyleFactory::create("dsemilight");
+            style = QStyleFactory::create("dsemilight2");
             widget->setProperty("_d_dtk_theme", "light");
         } else if (theme == "semidark") {
-            style = QStyleFactory::create("dsemidark");
+            style = QStyleFactory::create("dsemidark2");
             widget->setProperty("_d_dtk_theme", "dark");
         }
 
