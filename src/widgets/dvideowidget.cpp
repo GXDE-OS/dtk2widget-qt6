@@ -99,8 +99,7 @@ QList<QVideoFrameFormat::PixelFormat> VideoFormatProxy::supportedPixelFormats(QA
 
 bool VideoFormatProxy::isFormatSupported(const QVideoFrameFormat &format) const
 {
-    //return QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat()) != QImage::Format_Invalid;
-    return false;
+    return QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat()) != QImage::Format_Invalid;
 }
 
 class DVideoWidgetPrivate : public DTK_CORE_NAMESPACE::DObjectPrivate

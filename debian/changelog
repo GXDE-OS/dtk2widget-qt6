@@ -1,3 +1,9 @@
+dtk2widget6 (6:6.0.3-4) UNRELEASED; urgency=medium
+
+  * 修复了DVideoWidget中VideoFormatProxy::isFormatSupported不工作的问题
+
+ -- CharOfString <markus_verify@126.com>  Sat, 27 Jun 2026 23:36:34 +0800
+
 dtk2widget6 (6:6.0.3-3) UNRELEASED; urgency=medium
 
   * 修复了「关于」对话框造成程序崩溃的问题
