@@ -9,38 +9,15 @@ LIBDIR = /usr/lib/$(DEB_HOST_MULTIARCH)
 BUILD_DIR = build-qt6
 
 %:
-	dh $@ --parallel
-
-override_dh_auto_configure:
-	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && qmake6 \
-		$(CURDIR)/dtkwidget.pro \
-		PREFIX=/usr LIB_INSTALL_DIR=$(LIBDIR)
-
-override_dh_auto_build:
-	$(MAKE) -C $(BUILD_DIR) -j$(shell nproc)
+	dh $@ --parallel --buildsystem=qmake6
 
 override_dh_auto_install:
-	$(MAKE) -C $(BUILD_DIR) install INSTALL_ROOT=$(CURDIR)/debian/tmp
+	dh_auto_install $@ --buildsystem=qmake6
 
+	$(MAKE) -C $(BUILD_DIR) install INSTALL_ROOT=$(CURDIR)/debian/tmp
 	sed -i 's|^Requires: dtkcore$$|Requires: dtk6core|' \
 		$(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/dtk2widget.pc
 	# 使用-L${libdir}强行指定dtk2widget
 	sed -i 's|^Libs: -ldtk2widget|Libs: -L$${libdir} -ldtk2widget|' \
 		$(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/dtk2widget.pc
 
-override_dh_auto_clean:
-	rm -rf $(BUILD_DIR)
-
-override_dh_makeshlibs:
-	dh_makeshlibs -V
-
-ifeq ($(DEB_BUILD_ARCH), sw_64)
-override_dh_makeshlibs:
-	dh_makeshlibs -V -- -c0
-endif
-
-ifeq ($(DEB_BUILD_ARCH), mips64el)
-override_dh_makeshlibs:
-	dh_makeshlibs -V -- -c0
-endif
