@@ -39,7 +39,7 @@ public:
     quint8 maskAlpha = 102;
 
     bool full = false;
-    bool blurEnabled = true;
+    bool blurEnabled = (qgetenv("WAYLAND_DISPLAY") == "");
 
     QColor maskColor = Qt::transparent;
     DBlurEffectWidget::MaskColorType maskColorType = DBlurEffectWidget::CustomColor;

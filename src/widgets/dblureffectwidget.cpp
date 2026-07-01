@@ -595,11 +595,6 @@ bool DBlurEffectWidget::blurEnabled() const
 {
     D_DC(DBlurEffectWidget);
 
-    // 根据实际情况判断是否需要使用 blur
-    // Wayland/XWayland 下不使用 blur
-    if (qgetenv("WAYLAND_DISPLAY") != "") {
-        return false;
-    }
     // termux 下因为 kwin 异常，不能使用 blur
     if (qgetenv("ANDROID_ROOT") != "") {
         return false;
