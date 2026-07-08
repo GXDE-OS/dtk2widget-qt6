@@ -11,11 +11,20 @@ win32* {
 linux{
     HEADERS += \
         $$PWD/dmpriscontrol.h \
-        $$PWD/dpasswdeditanimated.h
+        $$PWD/dpasswdeditanimated.h \
+        $$PWD/private/dkwinblur.h \
+        $$PWD/private/dmenueffect.h
 
     SOURCES += \
         $$PWD/dmpriscontrol.cpp \
-        $$PWD/dpasswdeditanimated.cpp
+        $$PWD/dpasswdeditanimated.cpp \
+        $$PWD/private/dkwinblur.cpp \
+        $$PWD/private/dmenueffect.cpp \
+        $$PWD/wayland-blur/blur-client-protocol.c
+
+    INCLUDEPATH += $$PWD/wayland-blur
+
+    LIBS += -lwayland-client
 
     includes.files += \
         $$PWD/DPasswdEditAnimated

@@ -61,6 +61,7 @@
 
 #ifdef Q_OS_LINUX
 #include "startupnotificationmonitor.h"
+#include "private/dmenueffect.h"
 
 #include <DDBusSender>
 
@@ -1156,13 +1157,20 @@ bool DApplication::notify(QObject *obj, QEvent *event)
 
         if (QMenu *menu = qobject_cast<QMenu *>(obj)) {
             if (!menu->testAttribute(Qt::WA_SetStyle)) {
-                if (!light_style) {
-                    // 在Qt6上，样式名称为dlight2
-                    light_style = QStyleFactory::create("dlight2");
-                }
+#ifdef Q_OS_LINUX
+                if (isWayland()) {
+                    DMenuEffect::install(menu);
+                } else
+#endif
+                {
+                    if (!light_style) {
+                        // 在Qt6上，样式名称为dlight2
+                        light_style = QStyleFactory::create("dlight2");
+                    }
 
-                if (light_style) {
-                    menu->setStyle(light_style);
+                    if (light_style) {
+                        menu->setStyle(light_style);
+                    }
                 }
             }
         }
