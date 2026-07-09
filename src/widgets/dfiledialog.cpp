@@ -46,6 +46,74 @@ DFileDialog::DFileDialog(QWidget *parent, const QString &caption,
 
 }
 
+namespace {
+
+QStringList execAndTakeFiles(DFileDialog *dialog, QString *selectedFilter)
+{
+    if (selectedFilter && !selectedFilter->isEmpty())
+        dialog->selectNameFilter(*selectedFilter);
+
+    if (dialog->exec() != QDialog::Accepted)
+        return QStringList();
+
+    if (selectedFilter)
+        *selectedFilter = dialog->selectedNameFilter();
+
+    return dialog->selectedFiles();
+}
+
+}  // namespace
+
+QString DFileDialog::getOpenFileName(QWidget *parent, const QString &caption,
+                                     const QString &dir, const QString &filter,
+                                     QString *selectedFilter, Options options)
+{
+    DFileDialog dialog(parent, caption, dir, filter);
+    dialog.setAcceptMode(AcceptOpen);
+    dialog.setFileMode(ExistingFile);
+    dialog.setOptions(options);
+
+    const QStringList files = execAndTakeFiles(&dialog, selectedFilter);
+    return files.isEmpty() ? QString() : files.constFirst();
+}
+
+QStringList DFileDialog::getOpenFileNames(QWidget *parent, const QString &caption,
+                                          const QString &dir, const QString &filter,
+                                          QString *selectedFilter, Options options)
+{
+    DFileDialog dialog(parent, caption, dir, filter);
+    dialog.setAcceptMode(AcceptOpen);
+    dialog.setFileMode(ExistingFiles);
+    dialog.setOptions(options);
+
+    return execAndTakeFiles(&dialog, selectedFilter);
+}
+
+QString DFileDialog::getSaveFileName(QWidget *parent, const QString &caption,
+                                     const QString &dir, const QString &filter,
+                                     QString *selectedFilter, Options options)
+{
+    DFileDialog dialog(parent, caption, dir, filter);
+    dialog.setAcceptMode(AcceptSave);
+    dialog.setFileMode(AnyFile);
+    dialog.setOptions(options);
+
+    const QStringList files = execAndTakeFiles(&dialog, selectedFilter);
+    return files.isEmpty() ? QString() : files.constFirst();
+}
+
+QString DFileDialog::getExistingDirectory(QWidget *parent, const QString &caption,
+                                          const QString &dir, Options options)
+{
+    DFileDialog dialog(parent, caption, dir, QString());
+    dialog.setAcceptMode(AcceptOpen);
+    dialog.setFileMode(Directory);
+    dialog.setOptions(options);
+
+    const QStringList files = execAndTakeFiles(&dialog, Q_NULLPTR);
+    return files.isEmpty() ? QString() : files.constFirst();
+}
+
 /*!
  * \~english \brief Add an extra ComboBox widget to the DFileDialog
  * \~chinese \brief 为文件选择框追加一个下拉单选框

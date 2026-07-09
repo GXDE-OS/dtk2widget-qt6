@@ -33,6 +33,29 @@ public:
         QString placeholderText;
     };
 
+    static QString getOpenFileName(QWidget *parent = Q_NULLPTR,
+                                   const QString &caption = QString(),
+                                   const QString &dir = QString(),
+                                   const QString &filter = QString(),
+                                   QString *selectedFilter = Q_NULLPTR,
+                                   Options options = Options());
+    static QStringList getOpenFileNames(QWidget *parent = Q_NULLPTR,
+                                        const QString &caption = QString(),
+                                        const QString &dir = QString(),
+                                        const QString &filter = QString(),
+                                        QString *selectedFilter = Q_NULLPTR,
+                                        Options options = Options());
+    static QString getSaveFileName(QWidget *parent = Q_NULLPTR,
+                                   const QString &caption = QString(),
+                                   const QString &dir = QString(),
+                                   const QString &filter = QString(),
+                                   QString *selectedFilter = Q_NULLPTR,
+                                   Options options = Options());
+    static QString getExistingDirectory(QWidget *parent = Q_NULLPTR,
+                                        const QString &caption = QString(),
+                                        const QString &dir = QString(),
+                                        Options options = ShowDirsOnly);
+
     void addComboBox(const QString &text, const QStringList &data);
     void addComboBox(const QString &text, const DComboBoxOptions &options);
     void addLineEdit(const QString &text);

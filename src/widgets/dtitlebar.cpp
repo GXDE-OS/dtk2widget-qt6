@@ -559,7 +559,7 @@ void DTitlebarPrivate::_q_backgroundActionTriggered()
     DMainWindow *dwin = q->m_dwindow;
     if (dwin) {
         if (dwin->background()) {
-            QString fileName = DFileDialog::getOpenFileName(NULL,
+            QString fileName = DFileDialog::getOpenFileName(const_cast<DTitlebar *>(q),
                                          QObject::tr("Choose the background image file"),
                                          QDir::homePath(),
                                          QObject::tr("Image file (*.jpg *.jpeg *.png *.bmp *.gif *.svg);;"

@@ -600,6 +600,13 @@ bool DApplication::loadTranslator(QList<QLocale> localeFallback)
 
 bool DApplication::isWayland()
 {
+    if (qGuiApp) {
+        static const bool onWayland =
+            qGuiApp->platformName().toLower().contains(QLatin1String("wayland"));
+        return onWayland;
+    }
+
+    // qApp 还没创建（例如 loadDXcbPlugin() 之前就来问），只能退回到环境变量启发式
     if (qgetenv("XDG_SESSION_TYPE") == "xwayland") {
         return true;
     }

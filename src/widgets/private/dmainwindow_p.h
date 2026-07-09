@@ -41,6 +41,8 @@ public:
     DMainWindowBackground   *background = Q_NULLPTR;
     QShortcut               *help       = Q_NULLPTR;
 
+    bool                    enableWindowBackground = false;
+
 private:
     D_DECLARE_PUBLIC(DMainWindow)
 };

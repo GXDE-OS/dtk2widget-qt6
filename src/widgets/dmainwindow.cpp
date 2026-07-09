@@ -40,6 +40,33 @@
 
 DWIDGET_BEGIN_NAMESPACE
 
+namespace {
+
+class DNoTitleBarFilter : public QObject {
+public:
+    explicit DNoTitleBarFilter(QWidget* window)
+        : QObject(window), m_window(window) {}
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        if (watched == m_window && !m_applied
+            && (event->type() == QEvent::Show
+                || event->type() == QEvent::PlatformSurface)) {
+            if (QWindow* handle = m_window->windowHandle()) {
+                m_applied = true;
+                DDdeShellManager::instance()->setNoTitleBar(handle, true);
+            }
+        }
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    QWidget* m_window = nullptr;
+    bool m_applied = false;
+};
+
+}  // namespace
+
 DMainWindowPrivate::DMainWindowPrivate(DMainWindow *qq)
     : DObjectPrivate(qq)
 {
@@ -115,10 +142,12 @@ void DMainWindowPrivate::init()
         });
     }
 
-    // 仅在 Wayland 下使用 
+    // 仅在 Wayland 下使用
     // TODO: mouseReleaseEvent 事件依旧存在问题: https://bbs.deepin.org.cn/zh/post/279273
     if (DApplication::isWayland()) {
         titlebar->setDMainWindow(q);
+        // 通过事件过滤器设置 NoTitleBar，这样用旧头文件编译的子类也一样生效
+        q->installEventFilter(new DNoTitleBarFilter(q));
     }
     background->setMainWindow(q);
 }
@@ -385,9 +414,7 @@ void DMainWindow::refreshBackground()
 {
     D_DC(DMainWindow);
 
-    if (!d->handle) {
-        return;
-    }
+    // 重新载入背景图跟 dxcb 无关，别再拿 handle 当门槛
     if (!d->background) {
         return;
     }
@@ -434,11 +461,12 @@ bool DMainWindow::enableWindowBackground() const
 {
     D_DC(DMainWindow);
 
-    if (!d->handle) {
-        return false;
+    // 以 dxcb 的窗口属性为准（那边可能被平台插件改过），没有 handle 就用本地的值
+    if (d->handle) {
+        return d->handle->enableWindowBackground();
     }
 
-    return d->handle->enableWindowBackground();
+    return d->enableWindowBackground;
 }
 
 void DMainWindow::setWindowRadius(int windowRadius)
@@ -588,15 +616,19 @@ void DMainWindow::setEnableWindowBackground(bool background)
 {
     D_D(DMainWindow);
 
-    if (!d->handle) {
-        return;
+    d->enableWindowBackground = background;
+
+    // handle 只有 dxcb 下才有；这个窗口属性也只有 dxcb 平台插件会读。
+    // 其余的事情（标题栏菜单项、重新载入背景图）在 Wayland 下同样要做。
+    if (d->handle) {
+        d->handle->setEnableWindowBackground(background);
     }
 
-    d->handle->setEnableWindowBackground(background);
     titlebar()->setDMainWindow(this);
     if (d->background) {
         d->background->refresh();
     }
+    update();
 }
 
 #ifdef Q_OS_MAC
@@ -624,11 +656,8 @@ DMainWindow::DMainWindow(DMainWindowPrivate &dd, QWidget *parent)
 }
 
 void DMainWindow::showEvent(QShowEvent* event) {
-    if (DApplication::isWayland()) {
-        if (QWindow* w = windowHandle()) {
-            DDdeShellManager::instance()->setNoTitleBar(w, true);
-        }
-    }
+    // NoTitleBar 的设置已移到 DNoTitleBarFilter（见文件开头）：子类若是用旧头文件
+    // 编译的，这里的重写根本不会被调用到。
     QMainWindow::showEvent(event);
 }
 
