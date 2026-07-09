@@ -18,6 +18,7 @@
  */
 
 #include <QMenu>
+#include <QAction>
 #include <QWindow>
 #include <QSurfaceFormat>
 #include <QPainter>
@@ -33,6 +34,7 @@
 
 #include "dmenueffect.h"
 #include "dkwinblur.h"
+#include "dmenuwayland.h"
 #include "dapplication.h"
 
 QT_BEGIN_NAMESPACE
@@ -45,9 +47,9 @@ DWIDGET_BEGIN_NAMESPACE
 namespace {
 
 const int kRadius = 8;
-const int kShadowMargin = 30;
-const int kShadowBlur = 10;
-const int kShadowOffsetY = 4;
+const int kShadowMargin = 18;
+const int kShadowBlur = 7;
+const int kShadowOffsetY = 3;
 
 bool menuDebug() {
     static const bool on = qEnvironmentVariableIsSet("DTK_MENU_DEBUG");
@@ -120,29 +122,38 @@ void DMenuProxyStyle::drawMenuDecoration(const QStyleOption* option,
         return;
     }
 
-    const QRect content = widget->rect().adjusted(
-        kShadowMargin, kShadowMargin, -kShadowMargin, -kShadowMargin);
+    const QMargins sm = widget->contentsMargins();
+    const QRect content(sm.left(), sm.top(),
+        widget->width() - sm.left() - sm.right(),
+        widget->height() - sm.top() - sm.bottom());
     QPainterPath bgPath;
     bgPath.addRoundedRect(content, kRadius, kRadius);
 
     painter->setRenderHint(QPainter::Antialiasing);
-
-    QImage shadow(widget->size(), QImage::Format_ARGB32_Premultiplied);
-    shadow.fill(Qt::transparent);
-    {
-        QPainter sp(&shadow);
-        sp.setRenderHint(QPainter::Antialiasing);
-        sp.fillPath(bgPath.translated(0, kShadowOffsetY), QColor(0, 0, 0));
-    }
-
     painter->save();
-    QPainterPath outside;
-    outside.addRect(widget->rect());
-    outside = outside.subtracted(bgPath);
-    painter->setClipPath(outside);
-    painter->setOpacity(0.18);
-    qt_blurImage(painter, shadow, kShadowBlur * 2.0, true, true);
+    painter->setCompositionMode(QPainter::CompositionMode_Source);
+    painter->fillRect(widget->rect(), Qt::transparent);
     painter->restore();
+
+    // Only draw shadow if margin is kept
+    if (!sm.isNull()) {
+        QImage shadow(widget->size(), QImage::Format_ARGB32_Premultiplied);
+        shadow.fill(Qt::transparent);
+        {
+            QPainter sp(&shadow);
+            sp.setRenderHint(QPainter::Antialiasing);
+            sp.fillPath(bgPath.translated(0, kShadowOffsetY), QColor(0, 0, 0));
+        }
+
+        painter->save();
+        QPainterPath outside;
+        outside.addRect(widget->rect());
+        outside = outside.subtracted(bgPath);
+        painter->setClipPath(outside);
+        painter->setOpacity(0.18);
+        qt_blurImage(painter, shadow, kShadowBlur * 2.0, true, true);
+        painter->restore();
+    }
 
     const bool blurOn = menuBlurActive();
     QColor bgColor = widget->palette().color(QPalette::Window);
@@ -166,7 +177,7 @@ void DMenuEffect::install(QMenu* menu) {
     menu->setProperty(kInstalledProperty, true);
 
     menu->setAttribute(Qt::WA_TranslucentBackground);
-    menu->createWinId();
+    DMenuWayland::setMenuLayerRole(menu);
     if (QWindow* win = menu->windowHandle()) {
         QSurfaceFormat fmt = win->requestedFormat();
         if (fmt.alphaBufferSize() <= 0) {
@@ -175,8 +186,10 @@ void DMenuEffect::install(QMenu* menu) {
         }
     }
 
-    menu->setContentsMargins(kShadowMargin, kShadowMargin, kShadowMargin,
-        kShadowMargin);
+    QMargins sm(kShadowMargin, kShadowMargin, kShadowMargin, kShadowMargin);
+    if (qobject_cast<QMenu*>(menu->parentWidget()))
+        sm.setLeft(0);
+    menu->setContentsMargins(sm);
 
     QStyle* base = QStyleFactory::create(QStringLiteral("dlight2"));
     DMenuProxyStyle* proxy = new DMenuProxyStyle(base);
@@ -194,15 +207,18 @@ bool DMenuEffect::eventFilter(QObject* watched, QEvent* event) {
     if (watched == m_menu) {
         switch (event->type()) {
         case QEvent::Show:
-            compensatePosition();
-            QTimer::singleShot(0, this, [this]() { updateBlur(); });
+            QTimer::singleShot(0, this, [this]() {
+                if (m_menu)
+                    m_menu->update();
+                placeMenu();
+                updateBlur();
+            });
             break;
         case QEvent::Resize:
         case QEvent::Move:
             QTimer::singleShot(0, this, [this]() { updateBlur(); });
             break;
         case QEvent::Hide:
-            m_posCompensated = false;
             clearBlur();
             break;
         default:
@@ -213,16 +229,32 @@ bool DMenuEffect::eventFilter(QObject* watched, QEvent* event) {
     return QObject::eventFilter(watched, event);
 }
 
-void DMenuEffect::compensatePosition() {
-    if (m_posCompensated || !m_menu) {
+void DMenuEffect::setupLayerShell() {}
+
+// From GXDE's fork of Deepin-menu
+void DMenuEffect::placeMenu() {
+    if (!m_menu || !m_menu->isVisible())
+        return;
+    if (!DMenuWayland::isLayerShellActive()) {
+        // Abort using layer-shell-qt shall be returned now.
         return;
     }
 
-    m_posCompensated = true;
-    m_menu->move(m_menu->pos() - QPoint(kShadowMargin, kShadowMargin));
+    if (QMenu* pm = qobject_cast<QMenu*>(m_menu->parentWidget())) {
+        QRect ar;
+        const auto acts = pm->actions();
+        for (QAction* a : acts) {
+            if (a->menu() == m_menu) {
+                ar = pm->actionGeometry(a);
+                break;
+            }
+        }
+        const QPoint off(pm->width() - pm->contentsMargins().right(), ar.top());
+        DMenuWayland::placeRelativeToWindow(m_menu, off.x(), off.y());
+    } else {
+        DMenuWayland::placeAtCursor(m_menu, 0);
+    }
 }
-
-void DMenuEffect::setupLayerShell() {}
 
 void DMenuEffect::updateBlur() {
     if (!m_menu || !m_menu->isVisible()) {
@@ -239,9 +271,10 @@ void DMenuEffect::updateBlur() {
         return;
     }
 
-    const QRect panel(kShadowMargin, kShadowMargin,
-        m_menu->width() - 2 * kShadowMargin,
-        m_menu->height() - 2 * kShadowMargin);
+    const QMargins sm = m_menu->contentsMargins();
+    const QRect panel(sm.left(), sm.top(),
+        m_menu->width() - sm.left() - sm.right(),
+        m_menu->height() - sm.top() - sm.bottom());
 
     if (panel.isEmpty()) {
         return;

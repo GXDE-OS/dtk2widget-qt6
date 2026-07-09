@@ -22,6 +22,7 @@
 
 #include "private/dmainwindow_p.h"
 #include "private/dapplication_p.h"
+#include "private/ddeshellmanager.h"
 
 #include <QKeySequence>
 #include <QShortcut>
@@ -55,11 +56,6 @@ DMainWindowPrivate::DMainWindowPrivate(DMainWindow *qq)
         // Wayland 下不设置 setEmbedMode 以便正确显示右上角的关闭按钮
         if (!DApplication::isWayland()) {
             titlebar->setEmbedMode(true);
-        }
-        else {
-            // Wayland 下隐藏窗口管理器提供的标题栏
-            qq->setWindowFlags(Qt::X11BypassWindowManagerHint);
-            qq->setWindowFlags(qq->windowFlags() | Qt::FramelessWindowHint);
         }
 
 #endif
@@ -625,12 +621,15 @@ DMainWindow::DMainWindow(DMainWindowPrivate &dd, QWidget *parent)
     background()->refresh();
 
     titlebar()->setDMainWindow(this);
+}
 
+void DMainWindow::showEvent(QShowEvent* event) {
     if (DApplication::isWayland()) {
-        // Wayland 下禁用窗管提供的标题栏
-        setWindowFlag(Qt::FramelessWindowHint, true);
+        if (QWindow* w = windowHandle()) {
+            DDdeShellManager::instance()->setNoTitleBar(w, true);
+        }
     }
-
+    QMainWindow::showEvent(event);
 }
 
 void DMainWindow::resizeEvent(QResizeEvent *event)

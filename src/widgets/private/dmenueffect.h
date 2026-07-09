@@ -57,12 +57,11 @@ protected:
 
 private:
     void setupLayerShell();
+    void placeMenu();
     void updateBlur();
     void clearBlur();
-    void compensatePosition();
 
     QMenu* m_menu = nullptr;
-    bool m_posCompensated = false;
 };
 
 DWIDGET_END_NAMESPACE

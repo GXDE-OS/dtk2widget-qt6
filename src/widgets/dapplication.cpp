@@ -1150,6 +1150,18 @@ static inline bool basePrintPropertiesDialog(const QWidget *w)
 
 bool DApplication::notify(QObject *obj, QEvent *event)
 {
+#ifdef Q_OS_LINUX
+    // Wayland menu must use QEvent::Polish, and this shall be done before the
+    // menu is measured.
+    if (event->type() == QEvent::Polish && isWayland()) {
+        if (QMenu* menu = qobject_cast<QMenu *>(obj)) {
+            if (!menu->testAttribute(Qt::WA_SetStyle)) {
+                DMenuEffect::install(menu);
+            }
+        }
+    }
+#endif
+
     if (event->type() == QEvent::PolishRequest) {
         // Fixed the style for the menu widget to dlight
         // ugly code will no longer needed.

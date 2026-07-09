@@ -1,6 +1,7 @@
 dtk2widget6 (6:6.1.0) UNRELEASED; urgency=medium
 
   * Wayland下 (仅限GXDE-Wlcom) 启用菜单的blur效果
+  * Wayland下 (仅限GXDE-Wlcom) 为DMainWindow适配圆角与阴影
 
  -- CharOfString <markus_verify@126.com>  Thu, 09 Jul 2026 01:22:25 +0800
 

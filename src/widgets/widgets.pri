@@ -13,18 +13,28 @@ linux{
         $$PWD/dmpriscontrol.h \
         $$PWD/dpasswdeditanimated.h \
         $$PWD/private/dkwinblur.h \
-        $$PWD/private/dmenueffect.h
+        $$PWD/private/dmenueffect.h \
+        $$PWD/private/ddeshellmanager.h \
+        $$PWD/private/dmenuwayland.h
 
     SOURCES += \
         $$PWD/dmpriscontrol.cpp \
         $$PWD/dpasswdeditanimated.cpp \
         $$PWD/private/dkwinblur.cpp \
         $$PWD/private/dmenueffect.cpp \
-        $$PWD/wayland-blur/blur-client-protocol.c
+        $$PWD/private/ddeshellmanager.cpp \
+        $$PWD/private/dmenuwayland.cpp \
+        $$PWD/wayland-blur/blur-client-protocol.c \
+        $$PWD/wayland-blur/dde-shell-client-protocol.c \
+        $$PWD/wayland-blur/treeland-dde-shell-protocol.c
 
     INCLUDEPATH += $$PWD/wayland-blur
+    INCLUDEPATH += /usr/include/LayerShellQt
 
-    LIBS += -lwayland-client
+    # QWaylandWindow::setCustomMargins(GXDE 定制 qtwayland 的私有 API)
+    QT += waylandclient-private
+
+    LIBS += -lwayland-client -lLayerShellQtInterface
 
     includes.files += \
         $$PWD/DPasswdEditAnimated
