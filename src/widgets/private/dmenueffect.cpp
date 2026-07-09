@@ -94,6 +94,27 @@ QRegion roundedRegion(const QRect& rect, int radius) {
 
 const char* kInstalledProperty = "_dtk_menu_effect_installed";
 
+QMenu* parentMenuOf(QMenu* menu) {
+    if (!menu) {
+        return nullptr;
+    }
+
+    if (QMenu* pm = qobject_cast<QMenu*>(menu->parentWidget())) {
+        return pm;
+    }
+
+    if (QAction* act = menu->menuAction()) {
+        const auto objects = act->associatedObjects();
+        for (QObject* obj : objects) {
+            if (QMenu* pm = qobject_cast<QMenu*>(obj)) {
+                return pm;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 }  // namespace
 
 DMenuProxyStyle::DMenuProxyStyle(QStyle* baseStyle) : QProxyStyle(baseStyle) {}
@@ -186,10 +207,8 @@ void DMenuEffect::install(QMenu* menu) {
         }
     }
 
-    QMargins sm(kShadowMargin, kShadowMargin, kShadowMargin, kShadowMargin);
-    if (qobject_cast<QMenu*>(menu->parentWidget()))
-        sm.setLeft(0);
-    menu->setContentsMargins(sm);
+    menu->setContentsMargins(kShadowMargin, kShadowMargin, kShadowMargin,
+        kShadowMargin);
 
     QStyle* base = QStyleFactory::create(QStringLiteral("dlight2"));
     DMenuProxyStyle* proxy = new DMenuProxyStyle(base);
@@ -207,6 +226,7 @@ bool DMenuEffect::eventFilter(QObject* watched, QEvent* event) {
     if (watched == m_menu) {
         switch (event->type()) {
         case QEvent::Show:
+            alignPanelToAnchor();
             QTimer::singleShot(0, this, [this]() {
                 if (m_menu)
                     m_menu->update();
@@ -214,8 +234,11 @@ bool DMenuEffect::eventFilter(QObject* watched, QEvent* event) {
                 updateBlur();
             });
             break;
-        case QEvent::Resize:
         case QEvent::Move:
+            maybeFlipSubmenu();
+            QTimer::singleShot(0, this, [this]() { updateBlur(); });
+            break;
+        case QEvent::Resize:
             QTimer::singleShot(0, this, [this]() { updateBlur(); });
             break;
         case QEvent::Hide:
@@ -230,6 +253,66 @@ bool DMenuEffect::eventFilter(QObject* watched, QEvent* event) {
 }
 
 void DMenuEffect::setupLayerShell() {}
+
+void DMenuEffect::alignPanelToAnchor() {
+    if (!m_menu)
+        return;
+
+    m_flipTried = false;
+
+    const QMargins sm = m_menu->contentsMargins();
+    QPoint winPos = m_menu->pos();  // 弹出窗口的 pos() 即全局坐标
+
+    if (QMenu* pm = parentMenuOf(m_menu)) {
+        const QMargins pmm = pm->contentsMargins();
+        const int parentLeft = pm->mapToGlobal(QPoint(0, 0)).x();
+        const bool opensLeft = winPos.x() < parentLeft;
+
+        if (opensLeft) {
+            const int parentPanelLeft = parentLeft + pmm.left();
+            winPos.setX(parentPanelLeft - m_menu->width() + sm.right());
+        } else {
+            const int parentPanelRight = parentLeft + pm->width() - pmm.right();
+            winPos.setX(parentPanelRight - sm.left());
+        }
+    } else {
+        winPos -= QPoint(sm.left(), sm.top());
+    }
+
+    // 记在 move() 之前：move() 会同步派发 QEvent::Move，maybeFlipSubmenu() 要靠
+    // 「实到位置 vs 请求位置」来判断是不是被合成器拽回来了。
+    m_requestedPos = winPos;
+    m_menu->move(winPos);
+}
+
+void DMenuEffect::maybeFlipSubmenu() {
+    if (!m_menu || m_flipTried)
+        return;
+
+    QMenu* pm = parentMenuOf(m_menu);
+    if (!pm)
+        return;
+
+    if (m_menu->pos().x() >= m_requestedPos.x())
+        return;
+
+    m_flipTried = true;
+
+    const QMargins sm = m_menu->contentsMargins();
+    const QMargins pmm = pm->contentsMargins();
+    const int parentPanelLeft = pm->mapToGlobal(QPoint(0, 0)).x() + pmm.left();
+
+    const QPoint flipped(parentPanelLeft - m_menu->width() + sm.right(),
+        m_requestedPos.y());
+
+    if (menuDebug()) {
+        qDebug() << "(DMenu) Submenu constrained, flipping to parent's left:"
+                 << m_requestedPos << "->" << flipped;
+    }
+
+    m_requestedPos = flipped;
+    m_menu->move(flipped);
+}
 
 // From GXDE's fork of Deepin-menu
 void DMenuEffect::placeMenu() {

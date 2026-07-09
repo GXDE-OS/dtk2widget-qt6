@@ -21,6 +21,7 @@
 #define DMENUEFFECT_H
 
 #include <QObject>
+#include <QPoint>
 #include <QProxyStyle>
 
 #include "dtkwidget_global.h"
@@ -57,11 +58,15 @@ protected:
 
 private:
     void setupLayerShell();
+    void alignPanelToAnchor();
+    void maybeFlipSubmenu();
     void placeMenu();
     void updateBlur();
     void clearBlur();
 
     QMenu* m_menu = nullptr;
+    QPoint m_requestedPos;
+    bool m_flipTried = false;
 };
 
 DWIDGET_END_NAMESPACE
