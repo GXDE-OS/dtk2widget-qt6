@@ -28,6 +28,7 @@ Build-Depends:
  libdtk6core-dev,
  libdtk6log-dev,
  libgsettings-qt6-dev,
+ libwayland-dev,
 Standards-Version: 3.9.8
 
 Package: libdtk2widget6
