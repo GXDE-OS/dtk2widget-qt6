@@ -36,6 +36,11 @@ Package: libdtk2widget6
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: gxde-qt6integration
+
+# GXDE-Wlcom's version required is "at least 1.4.1-gxde1"
+# For the old compositor contains bug & security issues which will let
+# DTK2Widget-Qt6 cause compositor to crash.
+Breaks: gxde-wlcom (<< 1.4.1-gxde1)
 Multi-Arch: same
 Description: Deepin graphical user interface library (Qt6 port of DTK 2.x)
  Qt6 port of the legacy dtkwidget 2.x. Provides libdtk2widget.so.6 which
