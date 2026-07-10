@@ -29,6 +29,7 @@ Build-Depends:
  libdtk6log-dev,
  libgsettings-qt6-dev,
  libwayland-dev,
+ liblayershellqtinterface-dev,
 Standards-Version: 3.9.8
 
 Package: libdtk2widget6
