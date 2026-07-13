@@ -36,7 +36,6 @@ Package: libdtk2widget6
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: gxde-qt6integration
-
 # GXDE-Wlcom's version required is "at least 1.4.1-gxde1"
 # For the old compositor contains bug & security issues which will let
 # DTK2Widget-Qt6 cause compositor to crash.
