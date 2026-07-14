@@ -30,6 +30,8 @@ Build-Depends:
  libgsettings-qt6-dev,
  libwayland-dev,
  liblayershellqtinterface-dev,
+ qt6-wayland-private-dev,
+ qt6-wayland-dev,
 Standards-Version: 3.9.8
 
 Package: libdtk2widget6
