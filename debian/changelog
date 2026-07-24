@@ -1,10 +1,15 @@
-dtk2widget6 (6:6.2.0-gxde1) UNRELEASED; urgency=medium
+dtk2widget6 (6:6.2.0-gxde2) UNRELEASED; urgency=medium
 
+  [ CharOfString ]
   * Wayland下修复窗体边框与最大化问题
   * 优化了Wayland普通判定逻辑
   * 修复了Wayland下DFileDialog不可用的问题
 
- -- CharOfString <root@charofstring.cc>  Fri, 10 Jul 2026 02:22:55 +0800
+  [ gfdgd_xi ]
+  * 修复dtk2应用图标加载异常的问题
+  * 修复dtk2应用半透明异常的问题
+
+ -- gfdgd_xi <3025613752@qq.com>  Fri, 24 Jul 2026 10:22:02 +0800
 
 dtk2widget6 (6:6.1.0) UNRELEASED; urgency=medium
 
