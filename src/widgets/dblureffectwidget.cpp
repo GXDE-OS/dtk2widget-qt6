@@ -30,6 +30,11 @@
 
 #include <qpa/qplatformbackingstore.h>
 
+#ifdef Q_OS_LINUX
+#include "private/dkwinblur.h"
+#include "private/ddeshellmanager.h"
+#endif
+
 #define MASK_COLOR_ALPHA_DEFAULT 204
 
 QT_BEGIN_NAMESPACE
@@ -60,6 +65,38 @@ bool DBlurEffectWidgetPrivate::isFull() const
     D_QC(DBlurEffectWidget);
 
     return full || (q->isTopLevel() && !(blurRectXRadius * blurRectYRadius));
+}
+
+void DBlurEffectWidgetPrivate::setupWaylandBlur()
+{
+#ifdef Q_OS_LINUX
+    D_Q(DBlurEffectWidget);
+
+    if (!DApplication::isWayland()) {
+        return;
+    }
+
+    if (!isBehindWindowBlendMode()) {
+        return;
+    }
+
+    QWindow *window = q->window()->windowHandle();
+    if (!window) {
+        return;
+    }
+
+    // Set window radius via dde-shell
+    int radius = blurRectXRadius > 0 ? blurRectXRadius : 5;
+    DDdeShellManager::instance()->setWindowRadius(window, radius);
+
+    // Enable blur via org_kde_kwin_blur_manager
+    if (blurEnabled) {
+        QRegion region(q->rect());
+        DKWinBlurManager::instance()->setBlur(window, region);
+    } else {
+        DKWinBlurManager::instance()->clearBlur(window);
+    }
+#endif
 }
 
 void DBlurEffectWidgetPrivate::addToBlurEffectWidgetHash()
@@ -130,6 +167,43 @@ bool DBlurEffectWidgetPrivate::updateWindowBlurArea(QWidget *topLevelWidget)
     if (!topLevelWidget->isVisible()) {
         return false;
     }
+
+#ifdef Q_OS_LINUX
+    // On Wayland, use wayland blur protocols instead of DPlatformWindowHandle
+    if (DApplication::isWayland()) {
+        QList<const DBlurEffectWidget *> blurEffectWidgetList = blurEffectWidgetHash.values(topLevelWidget);
+        bool hasBlurWidget = false;
+
+        Q_FOREACH (const DBlurEffectWidget *w, blurEffectWidgetList) {
+            if (w->d_func()->blurEnabled && w->isVisible() && w->d_func()->isBehindWindowBlendMode()) {
+                hasBlurWidget = true;
+                break;
+            }
+        }
+
+        if (hasBlurWidget) {
+            // Find the top-level DBlurEffectWidget to get its properties
+            QWindow *window = topLevelWidget->window()->windowHandle();
+            if (window) {
+                // Setup blur for the first visible blur widget
+                Q_FOREACH (const DBlurEffectWidget *w, blurEffectWidgetList) {
+                    if (w->d_func()->blurEnabled && w->isVisible() && w->d_func()->isBehindWindowBlendMode()) {
+                        const_cast<DBlurEffectWidgetPrivate *>(w->d_func())->setupWaylandBlur();
+                        break;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // No blur widgets, clear any existing blur
+        QWindow *window = topLevelWidget->window()->windowHandle();
+        if (window) {
+            DKWinBlurManager::instance()->clearBlur(window);
+        }
+        return false;
+    }
+#endif
 
     QList<const DBlurEffectWidget *> blurEffectWidgetList = blurEffectWidgetHash.values(topLevelWidget);
 
@@ -432,6 +506,8 @@ DBlurEffectWidget::DBlurEffectWidget(QWidget *parent)
 
     if (DApplication::isWayland()) {
         setWindowFlag(Qt::FramelessWindowHint, true);
+        // Re-set WA_TranslucentBackground after setWindowFlag as it may recreate the window
+        setAttribute(Qt::WA_TranslucentBackground);
     }
 }
 
@@ -526,6 +602,20 @@ int DBlurEffectWidget::blurRectYRadius() const
 QColor DBlurEffectWidget::maskColor() const
 {
     D_DC(DBlurEffectWidget);
+
+#ifdef Q_OS_LINUX
+    // On Wayland, always use maskAlpha for the alpha channel
+    // because DWindowManagerHelper::hasBlurWindow() may not work correctly
+    if (DApplication::isWayland()) {
+        switch ((int)d->maskColorType) {
+        case DarkColor:
+            return QColor(0, 0, 0, d->maskAlpha);
+        case LightColor:
+            return QColor(255, 255, 255, d->maskAlpha);
+        }
+        return d->maskColor;
+    }
+#endif
 
     switch ((int)d->maskColorType) {
     case DarkColor: {
@@ -653,6 +743,8 @@ void DBlurEffectWidget::setBlendMode(DBlurEffectWidget::BlendMode blendMode)
 
     if (blendMode == BehindWindowBlend && DApplication::isWayland()) {
         setWindowFlag(Qt::FramelessWindowHint, true);
+        // Re-set WA_TranslucentBackground after setWindowFlag as it may recreate the window
+        setAttribute(Qt::WA_TranslucentBackground);
     }
 
     d->blendMode = blendMode;
@@ -805,6 +897,15 @@ void DBlurEffectWidget::paintEvent(QPaintEvent *event)
         pa.setClipPath(path);
     }
 
+#ifdef Q_OS_LINUX
+    // On Wayland, the blur effect is handled by the compositor via wayland protocols.
+    // We just need to paint the mask color.
+    if (DApplication::isWayland() && d->isBehindWindowBlendMode()) {
+        pa.fillRect(rect(), maskColor());
+        return;
+    }
+#endif
+
     if (d->isBehindWindowBlendMode()) {
         pa.setCompositionMode(QPainter::CompositionMode_Source);
     } else {
@@ -931,6 +1032,8 @@ void DBlurEffectWidget::setWindowFlag(Qt::WindowType type, bool on)
     QWidget::setWindowFlag(type, on);
     if (DApplication::isWayland()) {
         QWidget::setWindowFlag(Qt::WindowStaysOnTopHint, false);
+        // Ensure WA_TranslucentBackground is preserved on Wayland
+        QWidget::setAttribute(Qt::WA_TranslucentBackground);
     }
 }
 
@@ -939,6 +1042,8 @@ void DBlurEffectWidget::setWindowFlags(Qt::WindowFlags type)
     QWidget::setWindowFlags(type);
     if (DApplication::isWayland()) {
         QWidget::setWindowFlag(Qt::WindowStaysOnTopHint, false);
+        // Ensure WA_TranslucentBackground is preserved on Wayland
+        QWidget::setAttribute(Qt::WA_TranslucentBackground);
     }
 }
 

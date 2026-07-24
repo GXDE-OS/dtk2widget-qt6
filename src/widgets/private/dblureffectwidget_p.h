@@ -39,7 +39,7 @@ public:
     quint8 maskAlpha = 102;
 
     bool full = false;
-    bool blurEnabled = (qgetenv("WAYLAND_DISPLAY") == "");
+    bool blurEnabled = true;
 
     QColor maskColor = Qt::transparent;
     DBlurEffectWidget::MaskColorType maskColorType = DBlurEffectWidget::CustomColor;
@@ -54,6 +54,8 @@ public:
     bool updateWindowBlurArea();
     void setMaskColor(const QColor &color);
     void setMaskAlpha(const quint8 alpha);
+
+    void setupWaylandBlur();
 
     static QMultiHash<QWidget*, const DBlurEffectWidget*> blurEffectWidgetHash;
     static QHash<const DBlurEffectWidget*, QWidget*> windowOfBlurEffectHash;
