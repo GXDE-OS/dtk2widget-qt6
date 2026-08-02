@@ -825,7 +825,18 @@ bool DPlatformWindowHandle::setWindowBlurAreaByWM(QWindow *window, const QVector
     }
 
     if (isEnabledDXcb(window)) {
-        setWindowProperty(window, _windowBlurAreas, QVariant::fromValue(*(reinterpret_cast<const QVector<quint32>*>(&area))));
+        // 不能直接使用 reinterpret_cast<const QVector<quint32>*>(&area) 强转后构造 QVariant：
+        // Qt6 中 QVector<WMBlurArea>（WMBlurArea 为 24 字节结构体）采用指针数组存储元素，
+        // 而 QVector<quint32> 采用内联存储，两者内存布局不同。强转得到的是损坏的 QVector<quint32>，
+        // 其 QVariant 相等比较（dxcb 的 setWindowProperty 中用 old_value == value 做去重判断）
+        // 对内容不同的数据也会返回相等，导致窗口尺寸变化后模糊区域无法更新。
+        QVector<quint32> areas;
+        areas.reserve(area.size() * 6);
+        for (const auto &a : area) {
+            areas << quint32(a.x) << quint32(a.y) << quint32(a.width)
+                  << quint32(a.height) << quint32(a.xRadius) << quint32(a.yRaduis);
+        }
+        setWindowProperty(window, _windowBlurAreas, QVariant::fromValue(areas));
 
         return true;
     }
