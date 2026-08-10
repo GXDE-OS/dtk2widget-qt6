@@ -269,7 +269,18 @@ bool DDesktopServices::previewSystemSoundEffect(const QString &name)
 
     if (path.endsWith("wav")) {
         QSoundEffect *sound = new QSoundEffect();
-        sound->setSource(path);
+        sound->setSource(QUrl::fromLocalFile(path));
+        // The object must outlive the asynchronous playback, and must be
+        // deleted once it finishes (or errors out) to avoid leaking it.
+        QObject::connect(sound, &QSoundEffect::playingChanged, sound, [sound] {
+            if (!sound->isPlaying())
+                sound->deleteLater();
+        });
+        QObject::connect(sound, &QSoundEffect::statusChanged, sound, [sound] {
+            if (sound->status() == QSoundEffect::Error)
+                sound->deleteLater();
+        });
+        sound->play();
     } else {
         QMediaPlayer *player = soundEffectPlayer();
         player->setSource(QUrl::fromLocalFile(path));
