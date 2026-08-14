@@ -82,14 +82,20 @@ void DMainWindowBackground::resizeImage()
         // 防止空指针导致崩溃
         return;
     }
+    // 使用逻辑尺寸进行缩放，devicePixelRatio 交由 QImage 携带，
+    // 绘制时由 QPainter 在逻辑坐标系下自动完成高清缩放，
+    // 避免在 Wayland 非整数缩放（如 1.25）下坐标体系不一致导致壁纸偏移。
     qreal scaleFactor = m_dmainWindow->devicePixelRatioF();
+    // scaled 的目标必须是「设备像素」尺寸（逻辑尺寸 × dpr），
+    // 之后再 setDevicePixelRatio(dpr)，这样 QPainter 在逻辑坐标系下
+    // 绘制时实际渲染尺寸 = (width*dpr)/dpr = width，恰好铺满窗口。
     int imageWidth = m_dmainWindow->width() * scaleFactor;
     int imageHeight = m_dmainWindow->height() * scaleFactor;
     QImage image = m_imageVar[BackgroundPlace::FullWindow];
-    image.setDevicePixelRatio(scaleFactor);
     m_backgroundResized = image.scaled(QSize(imageWidth, imageHeight),
-                                                                         Qt::KeepAspectRatioByExpanding,
-                                                                         Qt::SmoothTransformation);
+                                       Qt::KeepAspectRatioByExpanding,
+                                       Qt::SmoothTransformation);
+    m_backgroundResized.setDevicePixelRatio(scaleFactor);
 }
 
 QImage DMainWindowBackground::getImage(BackgroundPlace place)
@@ -105,7 +111,10 @@ QList<int> DMainWindowBackground::getImageSize(BackgroundPlace place)
 {
     QList<int> size;
     QImage image = getImage(place);
-    size << image.size().width() << image.height();
+    // QImage::size() 返回的是设备像素尺寸，需要除以 devicePixelRatio
+    // 转换为逻辑尺寸，否则在缩放场景下尺寸会被放大。
+    size << qRound(image.size().width() / image.devicePixelRatio())
+         << qRound(image.size().height() / image.devicePixelRatio());
     return size;
 }
 
@@ -122,9 +131,11 @@ QList<int> DMainWindowBackground::getImageXY(BackgroundPlace place)
     int windowWidth = 0;
     int windowHeight = 0;
     if (m_dmainWindow) {
-        qreal scaleFactor = m_dmainWindow->devicePixelRatioF();
-        windowWidth = m_dmainWindow->width() * scaleFactor;
-        windowHeight = m_dmainWindow->height() * scaleFactor;
+        // 使用逻辑尺寸（与 getImageSize 返回的逻辑尺寸保持一致），
+        // QPainter::drawImage 在逻辑坐标系下绘制，由 QImage 的
+        // devicePixelRatio 处理高清缩放。
+        windowWidth = m_dmainWindow->width();
+        windowHeight = m_dmainWindow->height();
     }
     int x = 0, y = 0;
 
@@ -220,6 +231,7 @@ void DMainWindowBackground::refresh()
         imagePath.append(image);
     }
     // 加载 QImage 对象
+    qreal scaleFactor = m_dmainWindow ? m_dmainWindow->devicePixelRatioF() : 1.0;
     for (int i = 0; i < imageName.count(); ++i) {
         QImage image;
         if (QFile::exists(imagePath[i])) {
@@ -228,6 +240,15 @@ void DMainWindowBackground::refresh()
             if (i == 8) {
                 // 如果已经设置了右下角 logo,则不重复显示
                 m_showFMLogo = false;
+            }
+            // 为非全屏角标图片设置 devicePixelRatio 并放大，
+            // 使其在逻辑坐标系下绘制时保持高清（FullWindow 由 resizeImage 处理）。
+            if (i != static_cast<int>(BackgroundPlace::FullWindow) && scaleFactor != 1.0) {
+                QImage scaled = image.scaled(image.size() * scaleFactor,
+                                            Qt::KeepAspectRatio,
+                                            Qt::SmoothTransformation);
+                scaled.setDevicePixelRatio(scaleFactor);
+                image = scaled;
             }
         }
         m_imageVar.append(image);
