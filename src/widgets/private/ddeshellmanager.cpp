@@ -175,7 +175,10 @@ void DDdeShellManager::setNoTitleBar(QWindow* window, bool noTitleBar) {
 
     dde_shell_surface_set_property(ss, DDE_SHELL_PROPERTY_NOTITLEBAR, &arr);
     wl_array_release(&arr);
-    wl_display_flush(m_display);
+
+    if (m_display) {
+        wl_display_flush(m_display);
+    }
 
     if (shellDebug())
         qDebug() << "(DWindow) setNoTitleBar" << noTitleBar << "for" << window;
@@ -197,10 +200,28 @@ void DDdeShellManager::setWindowRadius(QWindow* window, int radius) {
     }
     dde_shell_surface_set_property(ss, DDE_SHELL_PROPERTY_WINDOWRADIUS, &arr);
     wl_array_release(&arr);
-    wl_display_flush(m_display);
+
+    if (m_display) {
+        wl_display_flush(m_display);
+    }
 
     if (shellDebug())
         qDebug() << "(DWindow) setWindowRadius" << radius << "for" << window;
+}
+
+void DDdeShellManager::resetSurface(QWindow* window) {
+    if (!window) {
+        return;
+    }
+
+    if (dde_shell_surface* s = m_surfaces.take(window)) {
+        // 旧 surface 即将销毁，销毁其绑定的 shell_surface 即可；
+        // 新的 surface 在重建后会通过 shellSurfaceFor 重新绑定。
+        dde_shell_surface_destroy(s);
+        if (m_display) {
+            wl_display_flush(m_display);
+        }
+    }
 }
 
 DWIDGET_END_NAMESPACE

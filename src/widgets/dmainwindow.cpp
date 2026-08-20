@@ -29,6 +29,7 @@
 #include <QWindow>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QPlatformSurfaceEvent>
 
 #ifdef Q_OS_MAC
 #include "osxwindow.h"
@@ -49,12 +50,55 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override {
-        if (watched == m_window && !m_applied
-            && (event->type() == QEvent::Show
-                || event->type() == QEvent::PlatformSurface)) {
-            if (QWindow* handle = m_window->windowHandle()) {
+        if (watched != m_window)
+            return QObject::eventFilter(watched, event);
+
+        const QEvent::Type type = event->type();
+
+        if (type == QEvent::Show) {
+            QWindow* handle = m_window->windowHandle();
+            if (!handle) {
+                // 窗口句柄已失效，需要重新应用。
+                m_applied = false;
+                m_appliedHandle = nullptr;
+                return QObject::eventFilter(watched, event);
+            }
+
+            if (!m_applied || m_appliedHandle != handle) {
+                // Show 事件仅做一次性（或窗口句柄变化后）的初始化应用。
                 m_applied = true;
+                m_appliedHandle = handle;
                 DDdeShellManager::instance()->setNoTitleBar(handle, true);
+            }
+        } else if (type == QEvent::PlatformSurface) {
+            auto* surf = static_cast<QPlatformSurfaceEvent*>(event);
+            // 只对“surface 新建完成”事件重新应用 NoTitleBar。
+            // Markdown 预览中的 QWebEngineView 会让顶层窗口的 wl_surface
+            // 经历“销毁 -> 重建”的过程：SurfaceAboutToBeDestroyed 时旧
+            // surface 即将失效，此时若仍去取 wl_surface 并向其绑定
+            // dde_shell_surface，会拿到 stale 指针并在已销毁的 surface 上
+            // 触发 Wayland 协议错误，导致 compositor 断开连接（程序崩溃）。
+            if (surf->surfaceEventType()
+                    == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed) {
+                // surface 即将销毁：清理与旧 surface 绑定的缓存，避免后续
+                // 在已失效的 stale 指针上调用 Wayland 协议接口而崩溃。
+                if (QWindow* handle = m_window->windowHandle()) {
+                    DDdeShellManager::instance()->resetSurface(handle);
+                }
+                m_applied = false;
+                m_appliedHandle = nullptr;
+            } else {
+                QWindow* handle = m_window->windowHandle();
+                if (!handle) {
+                    m_applied = false;
+                    m_appliedHandle = nullptr;
+                    return QObject::eventFilter(watched, event);
+                }
+
+                // setNoTitleBar 内部每次都会重新获取当前 wl_surface，幂等。
+                DDdeShellManager::instance()->setNoTitleBar(handle, true);
+                m_applied = true;
+                m_appliedHandle = handle;
             }
         }
         return QObject::eventFilter(watched, event);
@@ -63,6 +107,7 @@ protected:
 private:
     QWidget* m_window = nullptr;
     bool m_applied = false;
+    QWindow* m_appliedHandle = nullptr;
 };
 
 }  // namespace

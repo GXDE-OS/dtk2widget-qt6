@@ -45,6 +45,11 @@ public:
     void setNoTitleBar(QWindow* window, bool noTitleBar);
     void setWindowRadius(QWindow* window, int radius);
 
+    // 在 QWindow 的 wl_surface 即将被销毁时调用，丢弃并销毁与旧
+    // surface 绑定的 dde_shell_surface 缓存，使重建后能重新绑定到
+    // 新的 surface，避免使用已失效的 stale 指针。
+    void resetSurface(QWindow* window);
+
 private:
     explicit DDdeShellManager(QObject* parent = nullptr);
     ~DDdeShellManager() override;

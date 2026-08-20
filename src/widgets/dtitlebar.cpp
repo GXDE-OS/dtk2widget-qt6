@@ -383,9 +383,21 @@ void DTitlebarPrivate::handleParentWindowIdChange()
         targetWindowHandle = targetWindow()->windowHandle();
 
         updateButtonsFunc();
-    } else if (targetWindow()->windowHandle() != targetWindowHandle) {
-        // Parent change???, show never here
-        qWarning() << "targetWindowHandle change" << targetWindowHandle << targetWindow()->windowHandle();
+    } else {
+        QWindow* newHandle = targetWindow()->windowHandle();
+        if (newHandle != targetWindowHandle) {
+            // Parent change???, show never here
+            // 注意：Qt6 的 operator<<(QDebug, QWindow const*) 在传入空指针
+            // 时会直接解引用导致段错误，因此打印前先判空，并改用指针地址
+            // 输出，避免 Markdown 预览中 QWebEngineView 初始化导致窗口句柄
+            // 临时失效（windowHandle() 返回 nullptr）时崩溃。
+            if (!newHandle) {
+                qWarning() << "targetWindowHandle change, new handle is null";
+            } else {
+                qWarning() << "targetWindowHandle change"
+                           << (void *)targetWindowHandle << (void *)newHandle;
+            }
+        }
     }
 }
 
