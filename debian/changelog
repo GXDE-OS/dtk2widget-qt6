@@ -1,3 +1,9 @@
+dtk2widget6 (6:6.2.4) UNRELEASED; urgency=medium
+
+  * 标题栏背景菜单合并为单个可勾选项：设置成功后显示对号，再次点击清除窗口背景
+
+ -- shenmo <shenmo@spark-app.store>  Thu, 20 Aug 2026 22:41:51 +0800
+
 dtk2widget6 (6:6.2.3) UNRELEASED; urgency=medium
 
   * 修复了Wayland下崩溃的问题
