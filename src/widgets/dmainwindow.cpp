@@ -30,6 +30,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QPlatformSurfaceEvent>
+#include <QTimer>
 
 #ifdef Q_OS_MAC
 #include "osxwindow.h"
@@ -55,7 +56,9 @@ protected:
 
         const QEvent::Type type = event->type();
 
-        if (type == QEvent::Show) {
+        if (type == QEvent::Show
+                || type == QEvent::ShowToParent
+                || type == QEvent::WinIdChange) {
             QWindow* handle = m_window->windowHandle();
             if (!handle) {
                 // 窗口句柄已失效，需要重新应用。
@@ -65,10 +68,17 @@ protected:
             }
 
             if (!m_applied || m_appliedHandle != handle) {
-                // Show 事件仅做一次性（或窗口句柄变化后）的初始化应用。
-                m_applied = true;
+                // The wl_surface may not exist yet while QWidget is processing
+                // Show/WinIdChange.
+                // Delay until platform surface is created.
+                m_applied = false;
                 m_appliedHandle = handle;
-                DDdeShellManager::instance()->setNoTitleBar(handle, true);
+                QTimer::singleShot(0, this, [this, handle] {
+                    if (!m_window || m_window->windowHandle() != handle)
+                        return;
+                    DDdeShellManager::instance()->setNoTitleBar(handle, true);
+                    m_applied = true;
+                });
             }
         } else if (type == QEvent::PlatformSurface) {
             auto* surf = static_cast<QPlatformSurfaceEvent*>(event);
@@ -163,12 +173,15 @@ void DMainWindowPrivate::init()
         q->connect(handle, &DPlatformWindowHandle::enableWindowBackgroundChanged, q, &DMainWindow::enableWindowBackgroundChanged);
 
         if (!handle->isEnableNoTitlebar(q->windowHandle())) {
-            q->connect(qApp, &QGuiApplication::focusWindowChanged, q, [q] {
-                if (q->isActiveWindow())
-                {
+            QWindow *const platformWindow = q->windowHandle();
+            q->connect(qApp, &QGuiApplication::focusWindowChanged, q, [q, platformWindow] {
+                // QWebEngineView may recreate the top-level platform window.
+                if (!platformWindow || q->windowHandle() != platformWindow)
+                    return;
+
+                if (q->isActiveWindow()) {
                     q->setShadowColor(SHADOW_COLOR_ACTIVE);
-                } else
-                {
+                } else {
                     q->setShadowColor(SHADOW_COLOR_NORMAL);
                 }
             });

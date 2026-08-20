@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QMouseEvent>
 #include <QProcess>
+#include <QTimer>
 
 #include <DObjectPrivate>
 
@@ -42,6 +43,7 @@
 #include "util/dwindowmanagerhelper.h"
 #include "dmainwindow.h"
 #include "dfiledialog.h"
+#include "private/ddeshellmanager.h"
 
 DWIDGET_BEGIN_NAMESPACE
 
@@ -396,6 +398,15 @@ void DTitlebarPrivate::handleParentWindowIdChange()
             } else {
                 qWarning() << "targetWindowHandle change"
                            << (void *)targetWindowHandle << (void *)newHandle;
+                if (DApplication::isWayland()) {
+                    D_Q(DTitlebar);
+                    QTimer::singleShot(0, q, [this, newHandle] {
+                        if (targetWindow()
+                                && targetWindow()->windowHandle() == newHandle) {
+                            DDdeShellManager::instance()->setNoTitleBar(newHandle, true);
+                        }
+                    });
+                }
             }
         }
     }
