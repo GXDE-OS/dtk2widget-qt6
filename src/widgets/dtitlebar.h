@@ -117,7 +117,6 @@ private:
     D_PRIVATE_SLOT(void _q_aboutActionTriggered())
     D_PRIVATE_SLOT(void _q_quitActionTriggered())
     D_PRIVATE_SLOT(void _q_backgroundActionTriggered())
-    D_PRIVATE_SLOT(void _q_removeBackgroundActionTriggered())
 #endif
 };
 

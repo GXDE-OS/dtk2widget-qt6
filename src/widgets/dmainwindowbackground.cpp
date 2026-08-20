@@ -194,6 +194,20 @@ bool DMainWindowBackground::isSetBackground()
     return m_isSetBackground;
 }
 
+bool DMainWindowBackground::isUserBackgroundSet(BackgroundPlace place)
+{
+    QStringList themesTypeStr = {"light", "dark"};
+    QDir dir(QDir::homePath() + "/.config/GXDE/" + m_appName);
+    for (const QString &theme : themesTypeStr) {
+        QString backgroundPath = dir.path() + "/background-" + theme + "-" +
+                m_imageList[BackgroundPlace(place)] + ".png";
+        if (QFile::exists(backgroundPath)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void DMainWindowBackground::refresh()
 {
     if (!m_dmainWindow) {

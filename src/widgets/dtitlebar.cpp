@@ -81,7 +81,7 @@ private:
     void _q_aboutActionTriggered();
     void _q_quitActionTriggered();
     void _q_backgroundActionTriggered();
-    void _q_removeBackgroundActionTriggered();
+    void updateBackgroundActionState();
 #endif
 
     QHBoxLayout         *mainLayout;
@@ -106,7 +106,6 @@ private:
     QAction             *helpAction             = Q_NULLPTR;
     QAction             *aboutAction            = Q_NULLPTR;
     QAction             *backgroundAction       = Q_NULLPTR;
-    QAction             *removeBackgroundAction = Q_NULLPTR;
     QAction             *quitAction             = Q_NULLPTR;
 #endif
 
@@ -501,19 +500,14 @@ void DTitlebarPrivate::_q_addDefaultMenuItems()
 
     if (!backgroundAction) {
         menu->addSeparator();
-        backgroundAction = new QAction(qApp->translate("TitleBarMenu", "Set Background"), menu);
+        backgroundAction = new QAction(qApp->translate("TitleBarMenu", "Set Window Background"), menu);
+        backgroundAction->setCheckable(true);
         QObject::connect(backgroundAction, SIGNAL(triggered(bool)), q, SLOT(_q_backgroundActionTriggered()));
         menu->addAction(backgroundAction);
         backgroundAction->setVisible(isEnableBackgroundAction());
     }
 
-    if (!removeBackgroundAction) {
-        removeBackgroundAction = new QAction(qApp->translate("TitleBarMenu", "Remove Background"), menu);
-        QObject::connect(removeBackgroundAction, SIGNAL(triggered(bool)), q, SLOT(_q_removeBackgroundActionTriggered()));
-        menu->addAction(removeBackgroundAction);
-        removeBackgroundAction->setVisible(isEnableBackgroundAction());
-    }
-
+    updateBackgroundActionState();
 
     // add help menu item.
     if (!helpAction && DApplicationPrivate::isUserManualExists()) {
@@ -561,43 +555,51 @@ void DTitlebarPrivate::_q_quitActionTriggered()
     }
 }
 
-void DTitlebarPrivate::_q_removeBackgroundActionTriggered()
-{
-    D_QC(DTitlebar);
-    DMainWindow *dwin = q->m_dwindow;
-    if (dwin) {
-        if (dwin->background()) {
-            dwin->background()->removeUserBackground(DMainWindowBackground::light,
-                                                  DMainWindowBackground::BackgroundPlace::FullWindow);
-            dwin->background()->removeUserBackground(DMainWindowBackground::dark,
-                                                  DMainWindowBackground::BackgroundPlace::FullWindow);
-        }
-        dwin->refreshBackground();
-    }
-}
-
 void DTitlebarPrivate::_q_backgroundActionTriggered()
 {
     D_QC(DTitlebar);
     DMainWindow *dwin = q->m_dwindow;
-    if (dwin) {
-        if (dwin->background()) {
-            QString fileName = DFileDialog::getOpenFileName(const_cast<DTitlebar *>(q),
-                                         QObject::tr("Choose the background image file"),
-                                         QDir::homePath(),
-                                         QObject::tr("Image file (*.jpg *.jpeg *.png *.bmp *.gif *.svg);;"
-                                                     "All file (*.*)"));
-            if (QFile::exists(fileName)) {
-                dwin->background()->setUserBackground(DMainWindowBackground::light,
-                                                      fileName,
-                                                      DMainWindowBackground::BackgroundPlace::FullWindow);
-                dwin->background()->setUserBackground(DMainWindowBackground::dark,
-                                                      fileName,
-                                                      DMainWindowBackground::BackgroundPlace::FullWindow);
-            }
-        }
-        dwin->refreshBackground();
+    if (!dwin || !dwin->background()) {
+        return;
     }
+
+    if (backgroundAction->isChecked()) {
+        QString fileName = DFileDialog::getOpenFileName(const_cast<DTitlebar *>(q),
+                                     QObject::tr("Choose the background image file"),
+                                     QDir::homePath(),
+                                     QObject::tr("Image file (*.jpg *.jpeg *.png *.bmp *.gif *.svg);;"
+                                                 "All file (*.*)"));
+        if (QFile::exists(fileName)) {
+            dwin->background()->setUserBackground(DMainWindowBackground::light,
+                                                  fileName,
+                                                  DMainWindowBackground::BackgroundPlace::FullWindow);
+            dwin->background()->setUserBackground(DMainWindowBackground::dark,
+                                                  fileName,
+                                                  DMainWindowBackground::BackgroundPlace::FullWindow);
+        }
+    } else {
+        dwin->background()->removeUserBackground(DMainWindowBackground::light,
+                                              DMainWindowBackground::BackgroundPlace::FullWindow);
+        dwin->background()->removeUserBackground(DMainWindowBackground::dark,
+                                              DMainWindowBackground::BackgroundPlace::FullWindow);
+    }
+
+    dwin->refreshBackground();
+    updateBackgroundActionState();
+}
+
+void DTitlebarPrivate::updateBackgroundActionState()
+{
+    D_QC(DTitlebar);
+
+    if (!backgroundAction) {
+        return;
+    }
+
+    DMainWindow *dwin = q->m_dwindow;
+    const bool checked = dwin && dwin->background()
+            && dwin->background()->isUserBackgroundSet(DMainWindowBackground::BackgroundPlace::FullWindow);
+    backgroundAction->setChecked(checked);
 }
 
 bool DTitlebarPrivate::isEnableBackgroundAction()
@@ -766,9 +768,9 @@ void DTitlebar::setDMainWindow(DMainWindow *window)
 {
     D_D(DTitlebar);
     this->m_dwindow = window;
-    if (d->backgroundAction && d->removeBackgroundAction) {
+    if (d->backgroundAction) {
         d->backgroundAction->setVisible(d->isEnableBackgroundAction());
-        d->removeBackgroundAction->setVisible(d->isEnableBackgroundAction());
+        d->updateBackgroundActionState();
     }
 }
 

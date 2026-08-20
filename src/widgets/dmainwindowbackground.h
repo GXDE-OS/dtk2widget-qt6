@@ -60,6 +60,7 @@ public:
     void drawInWidget(QPainter *painter);
 
     bool isSetBackground();
+    bool isUserBackgroundSet(BackgroundPlace place);
 
 private:
     QList<QImage> m_imageVar;

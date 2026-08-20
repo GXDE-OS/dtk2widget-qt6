@@ -195,13 +195,8 @@
 <context>
     <name>TitleBarMenu</name>
     <message>
-        <location filename="../src/widgets/dtitlebar.cpp" line="479"/>
-        <source>Set Background</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/widgets/dtitlebar.cpp" line="486"/>
-        <source>Remove Background</source>
+        <location filename="../src/widgets/dtitlebar.cpp" line="503"/>
+        <source>Set Window Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
