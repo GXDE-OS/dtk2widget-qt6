@@ -394,9 +394,19 @@ void DTitlebarPrivate::handleParentWindowIdChange()
             // 临时失效（windowHandle() 返回 nullptr）时崩溃。
             if (!newHandle) {
                 qWarning() << "targetWindowHandle change, new handle is null";
+                targetWindowHandle = nullptr;
             } else {
                 qWarning() << "targetWindowHandle change"
                            << (void *)targetWindowHandle << (void *)newHandle;
+                // QWebEngineView can recreate the parent platform window.
+                // Rebind DTK's no-titlebar/dxcb decoration to the new handle;
+                // otherwise the WM adds its native titlebar back.
+                if (!DPlatformWindowHandle::setEnableNoTitlebarForWindow(newHandle, true)) {
+                    DPlatformWindowHandle::enableDXcbForWindow(newHandle);
+                }
+                targetWindowHandle = newHandle;
+                updateButtonsFunc();
+                updateButtonsState(targetWindow()->windowFlags());
                 if (DApplication::isWayland()) {
                     D_Q(DTitlebar);
                     QTimer::singleShot(0, q, [this, newHandle] {
@@ -1100,10 +1110,11 @@ void DTitlebar::setVisible(bool visible)
         }
         d->targetWindow()->installEventFilter(this);
 
-        connect(d->maxButton, SIGNAL(clicked()), this, SLOT(_q_toggleWindowState()));
-        connect(this, SIGNAL(doubleClicked()), this, SLOT(_q_toggleWindowState()));
-        connect(d->minButton, SIGNAL(clicked()), this, SLOT(_q_showMinimized()));
-        connect(d->closeButton, &DWindowCloseButton::clicked, d->targetWindow(), &QWidget::close);
+        connect(d->maxButton, SIGNAL(clicked()), this, SLOT(_q_toggleWindowState()), Qt::UniqueConnection);
+        connect(this, SIGNAL(doubleClicked()), this, SLOT(_q_toggleWindowState()), Qt::UniqueConnection);
+        connect(d->minButton, SIGNAL(clicked()), this, SLOT(_q_showMinimized()), Qt::UniqueConnection);
+        connect(d->closeButton, &DWindowCloseButton::clicked,
+                d->targetWindow(), &QWidget::close, Qt::UniqueConnection);
 
         d->updateButtonsState(d->targetWindow()->windowFlags());
     } else {

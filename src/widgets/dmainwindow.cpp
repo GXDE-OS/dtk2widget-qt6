@@ -135,11 +135,10 @@ DMainWindowPrivate::DMainWindowPrivate(DMainWindow *qq)
 #ifdef Q_OS_MAC
         OSX::HideWindowTitlebar(qq->winId());
 #else
-        // Wayland 下不设置 setEmbedMode 以便正确显示右上角的关闭按钮
+        // Wayland 下不设置 setEmbedMode 以便正确显示右上角的关闭按钮。
         if (!DApplication::isWayland()) {
             titlebar->setEmbedMode(true);
         }
-
 #endif
     }
 }
