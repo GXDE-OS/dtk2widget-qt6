@@ -1,3 +1,10 @@
+dtk2widget6 (6:6.2.6) UNRELEASED; urgency=medium
+
+  [ shenmo ]
+  * 修复 Qt6 下翻译目录仍指向 dtkwidget，导致“设置窗口背景”等菜单项无中文翻译
+
+ -- shenmo <shenmo@spark-app.store>  Sun, 23 Aug 2026 20:13:58 +0800
+
 dtk2widget6 (6:6.2.5) UNRELEASED; urgency=medium
 
   [ CharOfString ]
