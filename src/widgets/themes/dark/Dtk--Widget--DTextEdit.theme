@@ -1,6 +1,6 @@
 Dtk--Widget--DTextEdit {
     color: #fff;
-    border-radius: 3;
+    border-radius: 8px;
     background-color: rgba(255, 255, 255, 26);/*use as outside border*/
 }
 
@@ -9,8 +9,7 @@ Dtk--Widget--DTextEdit[alert="true"] QFrame#TextEditInsideFrame{
 }
 
 QFrame#TextEditInsideFrame {/*outside frame*/
-    background-color: rgba(0, 0, 0, 50);
-    border: 1px solid;
-    border-radius: 3;
-    border-color: black;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
 }

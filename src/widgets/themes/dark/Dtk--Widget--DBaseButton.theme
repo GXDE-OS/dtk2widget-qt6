@@ -1,17 +1,26 @@
 Dtk--Widget--DBaseButton {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #272727,
-                            stop: 1.0 #191919);
+                            stop: 0 #2E3238,
+                            stop: 1.0 #1B1E23);
     border-width: 1px;
     border-style: solid;
-    border-radius: 3;
-    border-color: rgba(0, 0, 0, 255);
+    border-radius: 8px;
+    border-color: rgba(255, 255, 255, 0.08);
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+Dtk--Widget--DBaseButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 #3A4149,
+                        stop: 1.0 #24292F);
+    border-color: rgba(0, 150, 255, 0.35);
 }
 
 Dtk--Widget--DBaseButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                        stop: 0 #181818,
-                        stop: 1.0 #282828);
+                        stop: 0 #1C2025,
+                        stop: 1.0 #31373E);
 }
 
 Dtk--Widget--DBaseButton:flat {

@@ -1,9 +1,9 @@
 Dtk--Widget--DWindow {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #3BC1FF, stop: 1.0 #079DFF);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #4AA8FF, stop: 1.0 #1B7BFF);
     border-width: 1px;
-    border-color: rgba(29, 130, 255, 0.30);
+    border-color: rgba(0, 110, 255, 0.35);
     border-style: solid;
-    border-radius: 3;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 13px;
     color: white;
 }

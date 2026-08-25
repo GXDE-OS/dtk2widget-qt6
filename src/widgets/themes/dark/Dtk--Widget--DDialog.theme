@@ -1,11 +1,12 @@
 Dtk--Widget--DDialog{
-    qproperty-backgroundColor: white;
-    qproperty-borderColor: rgba(0, 0, 0, 0.2);
+    qproperty-backgroundColor: rgba(30, 31, 35, 0.86);
+    qproperty-borderColor: rgba(255, 255, 255, 0.06);
 }
 
 QFrame#ButtonFrame{
-    border:1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 2px;
+    border:1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 #CloseButton{
@@ -15,42 +16,43 @@ QFrame#ButtonFrame{
 }
 
 QPushButton#NormalButton{
-    background-color: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 2px;
-    color: white;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #e6e6e6;
     text-align: center;
 }
 
 QPushButton#NormalButton:hover{
-    background-color: transparent;
-    color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 140, 255, 0.10);
+    border-color: rgba(0, 140, 255, 0.28);
+    color: #4cc2ff;
 }
 
 QPushButton#NormalButton:pressed{
-    background-color: transparent;
-    color: #01bdff;
+    background-color: rgba(0, 140, 255, 0.18);
+    color: #4cc2ff;
 }
 
 QPushButton#ActionButton{
     background-color: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-right: none;
     border-left: none;
     border-bottom: none;
     font-size: 13px;
-    color: #303030;
+    color: #d0d0d0;
     text-align: center;
     outline: none;
 }
 
 QPushButton#ActionButton[buttonType="1"] {/*warning*/
-    color: #ff5a5a;
+    color: #ff6b6b;
     font-weight: 500;
 }
 
 QPushButton#ActionButton[buttonType="2"] {/*recommend*/
-    color: #0087ff;
+    color: #4cc2ff;
     font-weight: 500;
 }
 
@@ -78,26 +80,26 @@ QPushButton#ConflictButton:checked{
 }
 
 QLabel#VLine{
-    background-color:rgba(0, 0, 0, 0.1);
+    background-color:rgba(255, 255, 255, 0.10);
 }
 
 QLabel#TitleLabel{
     padding-top: 2px;
     padding-bottom: 2px;
-    color: #000000;
+    color: #f0f0f0;
 }
 
 QLabel#MessageLabel{
     padding-top: 2px;
     padding-bottom: 2px;
-    color: #444444;
+    color: #b8b8b8;
 }
 
 QLabel#TaskTitleLabel{
    padding-top: 2px;
    padding-bottom: 2px;
    font-size: 10px;
-   color: #b4b4b4;
+   color: #808080;
 }
 
 QListWidget{

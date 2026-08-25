@@ -6,8 +6,8 @@ Dtk--Widget--DOption {
 }
 
 Dtk--Widget--DOption[checked="true"] {
-    background-color: lightblack;
-    border-radius:3px;
+    background-color: rgba(0, 150, 255, 0.14);
+    border-radius:8px;
     qproperty-checkedIcon:url(:/images/dark/images/tick_hover.png);
 }
 

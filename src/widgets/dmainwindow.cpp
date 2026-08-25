@@ -171,6 +171,14 @@ void DMainWindowPrivate::init()
         q->connect(handle, &DPlatformWindowHandle::autoInputMaskByClipPathChanged, q, &DMainWindow::autoInputMaskByClipPathChanged);
         q->connect(handle, &DPlatformWindowHandle::enableWindowBackgroundChanged, q, &DMainWindow::enableWindowBackgroundChanged);
 
+        // Aero-inspired default: soft drop shadow and rounded window corners.
+        handle->setWindowRadius(12);
+        handle->setShadowRadius(28);
+        handle->setShadowOffset(QPoint(0, 8));
+        handle->setShadowColor(SHADOW_COLOR_ACTIVE);
+        handle->setBorderWidth(1);
+        handle->setBorderColor(QColor(0, 0, 0, 28));
+
         if (!handle->isEnableNoTitlebar(q->windowHandle())) {
             QWindow *const platformWindow = q->windowHandle();
             q->connect(qApp, &QGuiApplication::focusWindowChanged, q, [q, platformWindow] {

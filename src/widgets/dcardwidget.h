@@ -49,9 +49,9 @@ private:
     void updateShadow();
 
     bool m_shadowEnabled = true;
-    qreal m_shadowBlurRadius = 18.0;
-    QColor m_shadowColor = QColor(0, 0, 0, 36);
-    QPointF m_shadowOffset = QPointF(0, 4);
+    qreal m_shadowBlurRadius = 24.0;
+    QColor m_shadowColor = QColor(0, 0, 0, 52);
+    QPointF m_shadowOffset = QPointF(0, 6);
 };
 
 DWIDGET_END_NAMESPACE

@@ -1,7 +1,7 @@
 Dtk--Widget--DLineEdit {
-    min-height: 22px;
+    min-height: 24px;
     color: #fff;
-    border-radius: 3;
+    border-radius: 8px;
     background-color: rgba(255, 255, 255, 26);/*use as outside border*/
 }
 
@@ -10,10 +10,13 @@ Dtk--Widget--DLineEdit[alert="true"] QFrame#LineEditInsideFrame{
 }
 
 QFrame#LineEditInsideFrame {/*outside frame*/
-    background-color: rgba(0, 0, 0, 50);
-    border: 1px solid;
-    border-radius: 3;
-    border-color: black;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+}
+
+Dtk--Widget--DLineEdit:focus QFrame#LineEditInsideFrame {
+    border-color: rgba(0, 150, 255, 0.45);
 }
 
 Dtk--Widget--DLineEdit #IconButton {

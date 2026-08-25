@@ -17,14 +17,19 @@ Dtk--Widget--DButtonList QFrame#BorderFrame[state="checked"]{
 
 Dtk--Widget--DButtonList QPushButton{
     background-color: transparent;
-    color: #b4b4b4;
+    color: #666666;
     border: none;
-    border-radius:3px;
+    border-radius: 8px;
     text-align: left center;
     padding-left: 40px;
+    margin: 2px 4px;
+}
+
+Dtk--Widget--DButtonList QPushButton:hover{
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
 Dtk--Widget--DButtonList QPushButton:checked{
-    background-color: white;
-    color: #2CA7F8;
+    background-color: rgba(0, 120, 255, 0.10);
+    color: #0078d4;
 }

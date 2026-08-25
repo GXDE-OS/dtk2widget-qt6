@@ -27,6 +27,7 @@
 #include <QLabel>
 #include <QDebug>
 #include <QWindow>
+#include <QGraphicsDropShadowEffect>
 
 #include "danchors.h"
 #include "dialog_constants.h"
@@ -36,6 +37,7 @@
 #include "dplatformwindowhandle.h"
 #include "dapplication.h"
 #include "dblureffectwidget.h"
+#include "util/dwindowmanagerhelper.h"
 
 DWIDGET_BEGIN_NAMESPACE
 
@@ -56,14 +58,13 @@ void DAbstractDialogPrivate::init()
         handle->setEnableSystemMove(false);
         handle->setEnableSystemResize(false);
 
-//        bgBlurWidget = new DBlurEffectWidget(q);
-//        bgBlurWidget->lower();
-//        bgBlurWidget->setBlendMode(DBlurEffectWidget::BehindWindowBlend);
-//        bgBlurWidget->setVisible(DPlatformWindowHandle::hasBlurWindow());
-
-//        DPlatformWindowHandle::connectWindowManagerChangedSignal(q, [this] {
-//            bgBlurWidget->setVisible(DPlatformWindowHandle::hasBlurWindow());
-//        });
+        // Aero-inspired soft shadow and rounded corners for native dialogs.
+        handle->setShadowRadius(28);
+        handle->setShadowOffset(QPoint(0, 8));
+        handle->setShadowColor(QColor(0, 0, 0, 70));
+        handle->setWindowRadius(12);
+        handle->setBorderWidth(1);
+        handle->setBorderColor(QColor(0, 0, 0, 28));
     } else {
         q->setWindowFlags(q->windowFlags() | Qt::FramelessWindowHint);
         q->setBorderColor(QColor(0, 0, 0));
@@ -77,6 +78,36 @@ void DAbstractDialogPrivate::init()
     });
 
     q->setAttribute(Qt::WA_TranslucentBackground);
+
+    // Frosted-glass background: let the compositor blur what is behind dialogs.
+    const bool blurSupported = DApplication::isDXcbPlatform()
+            || DApplication::isWayland()
+            || DWindowManagerHelper::instance()->hasBlurWindow();
+    if (blurSupported) {
+        bgBlurWidget = new DBlurEffectWidget(q);
+        bgBlurWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
+        bgBlurWidget->setBlendMode(DBlurEffectWidget::BehindWindowBlend);
+        bgBlurWidget->setBlurRectXRadius(12);
+        bgBlurWidget->setBlurRectYRadius(12);
+        QColor dialogBackground = q->backgroundColor();
+        if (!dialogBackground.isValid()) {
+            dialogBackground = QColor(255, 255, 255, 200);
+        }
+        bgBlurWidget->setMaskColor(dialogBackground);
+        bgBlurWidget->lower();
+        bgBlurWidget->resize(q->size());
+        bgBlurWidget->show();
+    }
+
+    if (!handle) {
+        // On non-dxcb platforms, draw the Aero-style shadow ourselves.
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(q);
+        shadow->setBlurRadius(28);
+        shadow->setOffset(0, 8);
+        shadow->setColor(QColor(0, 0, 0, 70));
+        q->setGraphicsEffect(shadow);
+    }
+
     q->resize(DIALOG::DEFAULT_WIDTH, DIALOG::DEFAULT_HEIGHT);
     q->setMaximumWidth(480);
     q->setAttribute(Qt::WA_Resized, false);

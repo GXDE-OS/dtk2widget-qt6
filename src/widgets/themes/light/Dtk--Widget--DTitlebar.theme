@@ -1,6 +1,6 @@
 Dtk--Widget--DTitlebar {
-    background: qlineargradient(x1:1, y1:0, x2:1, y2:1,
-                stop:0 #ffffff, stop:1 #f8f8f8);
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(255,255,255,0.72), stop:1 rgba(248,249,252,0.52));
 }
 
 Dtk--Widget--DTitlebar[transparent=true] {

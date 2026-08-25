@@ -6,7 +6,7 @@
 DWIDGET_BEGIN_NAMESPACE
 
 DCardWidget::DCardWidget(QWidget *parent) : DFrame(parent) {
-    setRadius(6);
+    setRadius(10);
     setLineWidth(1);
     updateShadow();
 }

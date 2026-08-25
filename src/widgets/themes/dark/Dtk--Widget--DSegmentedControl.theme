@@ -1,22 +1,24 @@
 Dtk--Widget--DSegmentedControl Dtk--Widget--DSegmentedHighlight#Highlight{
-    background-color: #2ca7f8;
+    background-color: rgba(0, 150, 255, 0.80);
     color: white;
     border: none;
+    border-radius: 8px;
 }
 
 Dtk--Widget--DSegmentedControl QToolButton{
-    color: white;
-    background: rgba(255, 255, 255, 38);
+    color: #e6e6e6;
+    background: rgba(255, 255, 255, 0.04);
     border: none;
+    border-radius: 8px;
     padding-bottom: 2px;
 }
 
 Dtk--Widget--DSegmentedControl QToolButton:hover{
-    background: rgba(255, 255, 255, 77);
+    background: rgba(255, 255, 255, 0.09);
 }
 
 Dtk--Widget--DSegmentedControl QToolButton:pressed{
-    background: rgba(255, 255, 255, 26);
+    background: rgba(255, 255, 255, 0.14);
 }
 
 Dtk--Widget--DSegmentedControl QToolButton:disabled{

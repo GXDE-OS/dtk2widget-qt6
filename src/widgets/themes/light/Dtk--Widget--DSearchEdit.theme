@@ -1,5 +1,5 @@
 Dtk--Widget--DSearchEdit {
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 Dtk--Widget--DSearchEdit #SearchIcon {
@@ -24,10 +24,13 @@ Dtk--Widget--DSearchEdit #Edit {
 }
 
 Dtk--Widget--DSearchEdit QFrame#DEditInsideFrame {
-    background-color: white;
-    border: 1px solid;
-    border-radius: 4px;
-    border-color: rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: 8px;
+}
+
+Dtk--Widget--DSearchEdit:focus QFrame#DEditInsideFrame {
+    border-color: rgba(0, 120, 255, 0.45);
 }
 
 Dtk--Widget--DSearchEdit #PlaceHolder {

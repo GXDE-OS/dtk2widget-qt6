@@ -85,8 +85,8 @@ void DFloatingMessage::initUi() {
     setBlurBackgroundEnabled(true);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     setMinimumHeight(44);
-    setShadowBlurRadius(22);
-    setShadowOffset(QPointF(0, 4));
+    setShadowBlurRadius(26);
+    setShadowOffset(QPointF(0, 6));
 
     m_content = new QWidget(this);
     m_layout = new QHBoxLayout(m_content);

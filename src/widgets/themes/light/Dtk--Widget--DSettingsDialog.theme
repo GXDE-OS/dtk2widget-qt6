@@ -14,12 +14,12 @@
 
 #ButtonGroupSingle {
     border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 4.0px;
+    border-radius: 8.0px;
 }
 #ButtonGroupBegin {
     border: 1px solid rgba(0, 0, 0, 0.08);
-    border-top-left-radius: 4.0px;
-    border-bottom-left-radius: 4.0px;
+    border-top-left-radius: 8.0px;
+    border-bottom-left-radius: 8.0px;
 }
 #ButtonGroupBegin:checked {
     background-color: #2ca7f8;
@@ -37,8 +37,8 @@
 #ButtonGroupEnd {
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-left: none;
-    border-top-right-radius: 4.0px;
-    border-bottom-right-radius: 4.0px;
+    border-top-right-radius: 8.0px;
+    border-bottom-right-radius: 8.0px;
 }
 #ButtonGroupEnd:checked {
     background-color: #2ca7f8;

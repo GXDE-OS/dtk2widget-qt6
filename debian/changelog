@@ -1,3 +1,11 @@
+dtk2widget6 (6:6.2.7) UNRELEASED; urgency=medium
+
+  [ shenmo ]
+  * 现代化 DTK2 控件视觉风格：提高圆角、柔化输入框与按钮、标题栏与对话框改为半透明质感
+  * 为对话框/主窗口增加 Aero 风格模糊与柔和阴影，并增强卡片、浮动窗口等控件的阴影默认值
+
+ -- shenmo <shenmo@spark-app.store>  Sun, 23 Aug 2026 20:13:58 +0800
+
 dtk2widget6 (6:6.2.6) UNRELEASED; urgency=medium
 
   [ shenmo ]

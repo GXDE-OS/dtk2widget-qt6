@@ -79,7 +79,7 @@ namespace DIALOG {
     const int DEFAULT_WIDTH = 380;
     const int DEFAULT_HEIGHT = 120;
     const int BORDER_SHADOW_WIDTH = 0;
-    const int BORDER_RADIUS = 4;
+    const int BORDER_RADIUS = 12;
     const int CONTENT_INSERT_OFFSET = 1;
     const int BUTTON_HEIGHT = 28;
     const int CLOSE_BUTTON_WIDTH = 27;

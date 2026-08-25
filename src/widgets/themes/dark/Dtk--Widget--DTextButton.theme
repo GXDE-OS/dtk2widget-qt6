@@ -1,22 +1,25 @@
 Dtk--Widget--DTextButton {
-    padding:0 5px;
-    min-width:50px;
-    color: #CCCCCC;
+    padding:0 12px;
+    min-width:62px;
+    color:#d0d0d0;
     outline:none;
-    border-width:5px 5px 5px 5px;
-    border-image:url(:/images/dark/images/dark_button_normal_bg.png) 5 5 5 5 stretch;
-    background-color:transparent;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
 }
 
 Dtk--Widget--DTextButton:hover {
-    color: #AAA;
-    border-image:url(:/images/dark/images/dark_button_hover_bg.png) 5 5 5 5 stretch;
+    background-color: rgba(0, 140, 255, 0.10);
+    border-color: rgba(0, 140, 255, 0.28);
+    color:#4cc2ff;
 }
 
 Dtk--Widget--DTextButton:pressed {
-    border-image:url(:/images/dark/images/dark_button_press_bg.png) 5 5 5 5 stretch;
+    background-color: rgba(0, 140, 255, 0.18);
 }
 
 Dtk--Widget--DTextButton:checked {
-    color:#01BDFF;
+    color:#4cc2ff;
+    border-color: rgba(0, 140, 255, 0.35);
+    background-color: rgba(0, 140, 255, 0.10);
 }

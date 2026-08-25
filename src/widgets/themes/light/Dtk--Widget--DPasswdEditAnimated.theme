@@ -1,9 +1,13 @@
 Dtk--Widget--DPasswdEditAnimated {
     border-width: 1px;
     border-style: solid;
-    border-radius: 3px;
-    border-color: #E6E6E6;
-    background-color: white;
+    border-radius: 8px;
+    border-color: rgba(0, 0, 0, 0.10);
+    background-color: rgba(255, 255, 255, 0.72);
+}
+
+Dtk--Widget--DPasswdEditAnimated:focus {
+    border-color: rgba(0, 120, 255, 0.45);
 }
 
 Dtk--Widget--DPasswdEditAnimated[editFocus="true"] {

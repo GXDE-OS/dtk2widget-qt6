@@ -58,17 +58,17 @@ public:
     bool radiusEnabled();
 
 public:
-    int m_radius = 3;
-    int m_arrowHeight = 8;
+    int m_radius = 8;
+    int m_arrowHeight = 10;
     int m_arrowWidth = 12;
-    int m_margin = 5;
+    int m_margin = 8;
     int m_arrowX = 0;
     int m_arrowY = 0;
 
-    qreal m_shadowBlurRadius = 20;
-    qreal m_shadowDistance = 0;
+    qreal m_shadowBlurRadius = 26;
+    qreal m_shadowDistance = 2;
     qreal m_shadowXOffset = 0;
-    qreal m_shadowYOffset = 5;
+    qreal m_shadowYOffset = 6;
     int m_shadowWidth = 5; //Abandoned
     int m_borderWidth = 1;
     QColor m_borderColor = QColor(0, 0, 0, 255 * 0.1);
