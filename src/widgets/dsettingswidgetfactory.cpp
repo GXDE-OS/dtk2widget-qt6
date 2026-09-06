@@ -162,7 +162,8 @@ QWidget *createShortcutEditOptionHandle(QObject *opt)
         option->connect(rightWidget, &ShortcutEdit::shortcutChanged,
         option, [ = ](Qt::KeyboardModifiers modifier, Qt::Key key) {
             QStringList keyseqs;
-            keyseqs << QString("%1").arg(modifier) << QString("%1").arg(key);
+            keyseqs << QString::number(static_cast<int>(modifier))
+                    << QString::number(static_cast<int>(key));
             option->setValue(keyseqs);
         });
         break;
