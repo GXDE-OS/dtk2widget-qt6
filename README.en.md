@@ -43,6 +43,7 @@
       <ul>
         <li><a href="#installing-dependencies">Installing Dependencies</a></li>
         <li><a href="#compiling-from-source">Compiling From Source</a></li>
+        <li><a href="#dialog-transparency">Dialog Transparency</a></li>
         <li><a href="#packaging">Packaging</a></li>
       </ul>
     </li>
@@ -163,6 +164,19 @@ If you only want the library but not the `deb` package, then do the following:
    ```bash
    sudo make install
    ```
+
+### Dialog Transparency
+
+The opacity of the blurred dialog background (including the About dialog and other `DAbstractDialog` subclasses) is defined in `src/widgets/dialog_constants.h`:
+
+```cpp
+namespace DIALOG {
+    const int BLUR_BACKGROUND_ALPHA_LIGHT = 128;  // light: 50%
+    const int BLUR_BACKGROUND_ALPHA_DARK = 166;   // dark: 65%
+}
+```
+
+The same value is used on both X11 (dxcb) and Wayland; the window manager's blur capability is no longer probed. Rebuild (and repackage/install) for changes to take effect. It is recommended to check the result with the About dialog on a real X11 + KWin session: increase the value if it looks too transparent, decrease it if it looks too opaque (range 0~255).
 
 ### Packaging
 

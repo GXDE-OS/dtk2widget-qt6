@@ -44,6 +44,7 @@
       <ul>
         <li><a href="#安装依赖">安装依赖</a></li>
         <li><a href="#从源码编译">从源码编译</a></li>
+        <li><a href="#对话框透明度调节">对话框透明度调节</a></li>
         <li><a href="#打包为-deb-安装包">打包为 .deb 安装包</a></li>
       </ul>
     </li>
@@ -164,6 +165,19 @@
    ```bash
    sudo make install
    ```
+
+### 对话框透明度调节
+
+浅色/深色模式下对话框（含「关于」等 `DAbstractDialog` 子类）模糊背景的透明度，定义在 `src/widgets/dialog_constants.h` 中：
+
+```cpp
+namespace DIALOG {
+    const int BLUR_BACKGROUND_ALPHA_LIGHT = 128;  // 浅色 50%
+    const int BLUR_BACKGROUND_ALPHA_DARK = 166;   // 深色 65%
+}
+```
+
+X11(dxcb) 与 Wayland 下统一使用该值，不再依赖窗口管理器的模糊能力探测。修改后需要重新编译（以及重新打包安装）才能生效。建议在真机 X11 + KWin 会话中打开「关于」等对话框确认实际观感：偏透就调大、偏实就调小（取值范围 0~255）。
 
 ### 打包为 .deb 安装包
 
