@@ -144,6 +144,7 @@ bool DBlurEffectWidgetPrivate::updateWindowBlurArea()
 
 void DBlurEffectWidgetPrivate::setMaskAlpha(const quint8 alpha) {
     maskAlpha = alpha;
+    maskAlphaSet = true;
 
     // refresh alpha
     setMaskColor(maskColor);
@@ -154,7 +155,11 @@ void DBlurEffectWidgetPrivate::setMaskColor(const QColor &color)
     maskColor = color;
 
     if (isBehindWindowBlendMode()) {
-        maskColor.setAlpha(DWindowManagerHelper::instance()->hasBlurWindow() ? maskAlpha : MASK_COLOR_ALPHA_DEFAULT);
+        // 调用方显式指定过 alpha 时始终以它为准，否则按平台能力自动选择：
+        // dxcb 下探测到模糊用 maskAlpha，否则用 MASK_COLOR_ALPHA_DEFAULT。
+        maskColor.setAlpha(maskAlphaSet ? maskAlpha
+                                        : (DWindowManagerHelper::instance()->hasBlurWindow()
+                                           ? maskAlpha : MASK_COLOR_ALPHA_DEFAULT));
     }
 
     D_Q(DBlurEffectWidget);
@@ -380,7 +385,8 @@ bool DBlurEffectWidgetPrivate::updateWindowBlurArea(QWidget *topLevelWidget)
 
 /*!
  * \~chinese \property DBlurEffectWidget::maskAlpha
- * \~chinese \brief maskColor 的alpha通道值。当前窗口管理器支持混成（窗口背景透明）时默认值为102，否则为204
+ * \~chinese \brief maskColor 的alpha通道值。未显式设置时，当前窗口管理器支持模糊时为102，否则为204；
+ * \~chinese 一旦调用过 setMaskAlpha，则始终以设置值为准，不再根据平台能力自动覆盖
  * \~chinese \note 可读可写
  * \~chinese \see DBlurEffectWidget::maskColor DPlatformWindowHandle::hasBlurWindow
  */
@@ -787,7 +793,9 @@ void DBlurEffectWidget::setBlurRectYRadius(int blurRectYRadius)
 void DBlurEffectWidget::setMaskAlpha(quint8 alpha) {
     D_D(DBlurEffectWidget);
 
-    if (alpha == d->maskAlpha) return;
+    // 即使数值恰好等于默认值，首次显式设置也要生效（此后不再按平台探测覆盖）
+    if (alpha == d->maskAlpha && d->maskAlphaSet)
+        return;
 
     d->setMaskAlpha(alpha);
 

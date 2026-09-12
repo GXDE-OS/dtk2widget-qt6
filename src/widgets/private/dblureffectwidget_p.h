@@ -37,6 +37,10 @@ public:
     int blurRectXRadius = 0;
     int blurRectYRadius = 0;
     quint8 maskAlpha = 102;
+    // 调用方是否显式设置过 maskAlpha。显式设置后不再根据平台能力探测覆盖 alpha
+    // （原来的规则是：dxcb 下能探测到模糊就用 maskAlpha，否则用 204），否则
+    // BehindWindowBlend 会出现在 X11 下过透、Wayland 下几乎不透明的问题。
+    bool maskAlphaSet = false;
 
     bool full = false;
     bool blurEnabled = true;

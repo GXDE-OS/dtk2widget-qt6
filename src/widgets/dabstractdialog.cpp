@@ -41,6 +41,22 @@
 
 DWIDGET_BEGIN_NAMESPACE
 
+namespace {
+
+// 对话框模糊背景层的透明度。这里不再使用 DWindowManagerHelper::hasBlurWindow()
+// 的平台探测（dxcb 下能探测到模糊，Wayland 下探测不到），而是按当前明暗主题取一个
+// 折中值，保证 X11 与 Wayland 下的观感一致：之前 X11 只有 40% 过于透明，Wayland
+// 则因为再叠加自绘背景而接近 96%，几乎不透明。
+quint8 dialogBlurBackgroundAlpha(const QWidget *dialog)
+{
+    const bool darkTheme = DThemeManager::instance()->theme(dialog) == QLatin1String("dark");
+
+    return static_cast<quint8>(darkTheme ? DIALOG::BLUR_BACKGROUND_ALPHA_DARK
+                                         : DIALOG::BLUR_BACKGROUND_ALPHA_LIGHT);
+}
+
+} // namespace
+
 DAbstractDialogPrivate::DAbstractDialogPrivate(DAbstractDialog *qq):
     DObjectPrivate(qq)
 {
@@ -94,6 +110,9 @@ void DAbstractDialogPrivate::init()
             dialogBackground = QColor(255, 255, 255, 200);
         }
         bgBlurWidget->setMaskColor(dialogBackground);
+        // 显式指定透明度，绕开 DBlurEffectWidget 按平台能力自动在 102/204 之间
+        // 切换的行为，让两种后端拿到同一个折中值。
+        bgBlurWidget->setMaskAlpha(dialogBlurBackgroundAlpha(q));
         bgBlurWidget->lower();
         bgBlurWidget->resize(q->size());
         bgBlurWidget->show();
@@ -344,8 +363,10 @@ void DAbstractDialog::setBackgroundColor(QColor backgroundColor)
 
     d->backgroundColor = backgroundColor;
 
-    if (d->bgBlurWidget)
+    if (d->bgBlurWidget) {
         d->bgBlurWidget->setMaskColor(backgroundColor);
+        d->bgBlurWidget->setMaskAlpha(dialogBlurBackgroundAlpha(this));
+    }
 
     update();
 }
@@ -470,15 +491,22 @@ void DAbstractDialog::paintEvent(QPaintEvent *event)
 
     QPainter painter(this);
 
-    if (d->handle) {
-        painter.fillRect(event->rect(), d->backgroundColor);
-    } else {
+    if (!d->handle) {
         painter.setPen(QPen(d->borderColor, DIALOG::BORDER_SHADOW_WIDTH));
-        painter.setBrush(d->backgroundColor);
+        // 存在模糊背景层时，背景完全由该层负责绘制：X11(dxcb) 下它用 Source 合成
+        // 直接决定窗口的最终透明度，Wayland 下它叠在自绘背景之上会造成二次叠加、
+        // 透明度骤降（浅色下实际接近 96%），因此这里不再重复填充背景，只补边框。
+        if (!d->bgBlurWidget) {
+            painter.setBrush(d->backgroundColor);
+        } else {
+            painter.setBrush(Qt::NoBrush);
+        }
         painter.setRenderHint(QPainter::Antialiasing, true);
         QRectF r(DIALOG::BORDER_SHADOW_WIDTH / 2.0, DIALOG::BORDER_SHADOW_WIDTH / 2.0,
                  width() - DIALOG::BORDER_SHADOW_WIDTH, height() - DIALOG::BORDER_SHADOW_WIDTH);
         painter.drawRoundedRect(r, DIALOG::BORDER_RADIUS, DIALOG::BORDER_RADIUS);
+    } else if (!d->bgBlurWidget) {
+        painter.fillRect(event->rect(), d->backgroundColor);
     }
 
     QDialog::paintEvent(event);

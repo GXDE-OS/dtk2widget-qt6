@@ -1,3 +1,13 @@
+dtk2widget6 (6:6.2.9) UNRELEASED; urgency=medium
+
+  [ shenmo ]
+  * 统一对话框模糊背景在 X11(dxcb) 与 Wayland 下的透明度：浅色 50%、深色 65%，
+    修复浅色下 X11 过于透明、Wayland 几乎不透明的问题
+  * DBlurEffectWidget 显式设置 maskAlpha 后不再被平台能力探测覆盖，
+    避免 Wayland 下透明度被强制为 204
+
+ -- shenmo <shenmo@spark-app.store>  Sun, 13 Sep 2026 00:15:00 +0800
+
 dtk2widget6 (6:6.2.8) UNRELEASED; urgency=medium
 
   * 支持Qt 6.10构建

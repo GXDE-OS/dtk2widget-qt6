@@ -80,6 +80,12 @@ namespace DIALOG {
     const int DEFAULT_HEIGHT = 120;
     const int BORDER_SHADOW_WIDTH = 0;
     const int BORDER_RADIUS = 12;
+    // 对话框模糊背景层的最终透明度（0~255）。X11(dxcb) 与 Wayland 统一使用该值，
+    // 避免平台能力探测差异导致一边过于透明、一边几乎不透明：
+    // 之前 dxcb 探测到模糊时用 102(40%)，Wayland 探测不到时用 204(80%)，
+    // 在 Wayland 上再叠加对话框自绘背景后实际接近 96%。
+    const int BLUR_BACKGROUND_ALPHA_LIGHT = 128;  // 50%
+    const int BLUR_BACKGROUND_ALPHA_DARK = 166;   // 65%
     const int CONTENT_INSERT_OFFSET = 1;
     const int BUTTON_HEIGHT = 28;
     const int CLOSE_BUTTON_WIDTH = 27;
