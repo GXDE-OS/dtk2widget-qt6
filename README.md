@@ -1,5 +1,3 @@
-[简体中文 | [English](./README.en.md)]
-
 <a id="readme-top"></a>
 
 ![Static Badge](https://img.shields.io/badge/DTK%E7%89%88%E6%9C%AC-2.3.6-%23007CFF?style=plastic)
@@ -14,70 +12,69 @@
   <h3 align="center">DTK2Widget-Qt6</h3>
 
   <p align="center">
-    <sup>（实验性）</sup> 对DTK2 Widget的Qt6移植
+    A port to Qt6 for DTK2 Widgets<br />
+    <a href="https://charofstring.cc/assets/dtk2widget-qt6_doxygen/index.html"><strong>Read WIKI »</strong></a>
     <br />
-    <a href="https://charofstring.cc/assets/dtk2widget-qt6_doxygen_zh/index.html"><strong>查看WIKI »</strong></a>
     <br />
-    <br />
-    <a href="https://gitee.com/GXDE-OS/gxde-qt6-integration">查看对应绑定</a>
+    <a href="https://gitee.com/GXDE-OS/gxde-qt6-integration">Corresponding Qt Intergration</a>
     &middot;
-    <a href="https://gitee.com/GXDE-OS/dtk2widget-qt6/issues">报告问题</a>
+    <a href="https://gitee.com/GXDE-OS/dtk2widget-qt6/issues">Report a Problem</a>
     &middot;
-    <a href="https://gitee.com/GXDE-OS/dtk2widget-qt6/issues">请求新控件</a>
+    <a href="https://gitee.com/GXDE-OS/dtk2widget-qt6/issues">Request New Widgets</a>
   </p>
 </div>
 
-> **注意**: 这不是深度（Deepin）官方的仓库，我们与Deepin无关。
+> **Note**: This is NOT the official repository of Deepin!!
 
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>目录</summary>
+  <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#关于项目">关于项目</a>
+      <a href="#about-this-project">About This Project</a>
       <ul>
-        <li><a href="#构建依赖">构建依赖</a></li>
+        <li><a href="#dependencies">Dependencies</a></li>
       </ul>
     </li>
     <li>
-      <a href="#开始使用">开始使用</a>
+      <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#安装依赖">安装依赖</a></li>
-        <li><a href="#从源码编译">从源码编译</a></li>
-        <li><a href="#对话框透明度调节">对话框透明度调节</a></li>
-        <li><a href="#打包为-deb-安装包">打包为 .deb 安装包</a></li>
+        <li><a href="#installing-dependencies">Installing Dependencies</a></li>
+        <li><a href="#compiling-from-source">Compiling From Source</a></li>
+        <li><a href="#dialog-transparency">Dialog Transparency</a></li>
+        <li><a href="#packaging">Packaging</a></li>
       </ul>
     </li>
-    <li><a href="#如何使用">如何使用</a></li>
-    <li><a href="#里程碑">里程碑</a></li>
-    <li><a href="#贡献者">贡献者</a></li>
-    <li><a href="#许可证">许可证</a></li>
-    <li><a href="#联系我们">联系我们</a></li>
-    <li><a href="#原README">原README</a></li>
-    <li><a href="#感谢">感谢</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#original-readme">Original README</a></li>
+    <li><a href="#acknowledgements">Acknowledgements</a></li>
   </ol>
 </details>
 
 
 
 <!-- ABOUT THE PROJECT -->
-## 关于项目
+## About This Project
 
-![Containers的截图，使用此移植库](./doc/screenshots/containers.png)
+![Scrrenshot of *Containers*, using this library](./doc/screenshots/containers.png)
 
-喜欢DTK2的外观又想要Qt6？没问题！
+Love the apperance of DTK2 but prefer Qt6? We got you!
 
-这个仓库是对深度经典的DTK2的Qt6移植，我们翻译了Qt5与Qt6之间API的不同并且开发了[GXDE-Qt6-Integration](https://gitee.com/GXDE-OS/gxde-qt6-integration)扩展，使您可以同时使用Qt6与DTK2.
+This repository is the port of Deepin's classical DTK2 Widget to Qt6, we translated the API difference between Qt5 and Qt6 and developed the corresponding [GXDE-Qt6-Integration](https://gitee.com/GXDE-OS/gxde-qt6-integration) so that you may use Qt6 and DTK2 Widgets at the same time.
 
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
-### 构建依赖
-* `.deb`包构建依赖：
+### Dependencies
+* For building the `.deb` package: 
   * debhelper <sub>(>= 9)</sub>
   * pkg-config
-* Qt6 依赖：<sub>(推荐Qt版本：6.8.2)</sub>
+* Qt6: <sub>(Qt 6.8.2 is preferred)</sub>
   * qt6-base-dev
   * qt6-base-private-dev
   * qt6-tools-dev-tools
@@ -85,11 +82,11 @@
   * qt6-svg-dev
   * qt6-l10n-tools
   * qt6-scxml-dev
-* DTK 依赖：
+* DTK: 
   * libdtk6core-dev
   * libdtk6log-dev
   * libgsettings-qt6-dev
-* X11与系统依赖：
+* X11/System: 
   * libudev-dev
   * libxext-dev
   * x11proto-xext-dev
@@ -98,34 +95,34 @@
   * libxi-dev
   * libstartup-notification0-dev
   * libmtdev-dev
-* 图形依赖：
+* Graphical: 
   * libegl1-mesa-dev
   * libfontconfig1-dev
   * libfreetype6-dev
   * libglib2.0-dev
   * librsvg2-dev
-* 运行时依赖：
+* Runtime: 
   * [gxde-qt6integration_6.0.1-1](https://gitee.com/GXDE-OS/gxde-qt6-integration)
 
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
 <!-- GETTING STARTED -->
-## 开始使用
-本项目基于 `qmake6` 构建，并通过 Debian 标准的 `debuild` 流程打包为 `.deb`。
+## Getting Started
+This project is built with `qmake6` and then packed with Debian's standard `debuild` process.
 
-以下步骤在 GXDE 25.3 上验证通过。
+The following instruction is based on GXDE 25.3.
 
-### 安装依赖
+### Installing Dependencies
 
-1. 安装打包工具：
+1. Installing the packaging tools: 
    ```bash
    sudo apt update
    sudo apt install build-essential devscripts debhelper pkg-config git
    ```
 
-2. 安装项目所需的开发依赖<sup>（详细列表见上文 [构建依赖](#构建依赖)）</sup>：
+2. Install devel packages<sup>(Be sure to read the *[Dependencies](#dependencies)* part)</sup>：
    ```bash
    sudo apt install \
        qt6-base-dev qt6-base-private-dev qt6-tools-dev-tools \
@@ -137,51 +134,51 @@
        libglib2.0-dev librsvg2-dev
    ```
 
-   > **提示**：进入项目目录后，可以使用 `sudo apt build-dep .` 让 apt 根据 `debian/control` 自动解析并安装全部构建依赖。
+   > **Note**: After entering the project directory, you may use `sudo apt build-dep .` to let apt get and install all depencies according to `debian/control`.
 
-### 从源码编译
+### Compiling From Source
 
-如果你只想得到可用的库文件而**不需要**生成 `.deb` 包，可按以下步骤手动编译：
+If you only want the library but not the `deb` package, then do the following: 
 
-1. 克隆仓库：
+1. Clone this repository: 
    ```bash
    git clone https://gitee.com/GXDE-OS/dtk2widget-qt6.git
    cd dtk2widget-qt6
    ```
 
-2. 创建独立的构建目录, 使用 `qmake6` 配置项目：
+2. Use `qmake6` to configre the project:
    ```bash
    mkdir build-qt6
    cd build-qt6
    qmake6 ../dtkwidget.pro PREFIX=/usr LIB_INSTALL_DIR=/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)
    ```
 
-3. 编译项目：
+3. Compile project: 
    ```bash
    make -j$(nproc)
    ```
 
-4. 安装到系统（可选，会写入 `/usr` 下的系统路径）：
+4. Install to system (Optional, this will be write to path under `/usr`): 
    ```bash
    sudo make install
    ```
 
-### 对话框透明度调节
+### Dialog Transparency
 
-浅色/深色模式下对话框（含「关于」等 `DAbstractDialog` 子类）模糊背景的透明度，定义在 `src/widgets/dialog_constants.h` 中：
+The opacity of the blurred dialog background (including the About dialog and other `DAbstractDialog` subclasses) is defined in `src/widgets/dialog_constants.h`:
 
 ```cpp
 namespace DIALOG {
-    const int BLUR_BACKGROUND_ALPHA_LIGHT = 199;  // 浅色 78%（紧凑小窗）
-    const int BLUR_BACKGROUND_ALPHA_DARK = 199;   // 深色 78%（紧凑小窗）
+    const int BLUR_BACKGROUND_ALPHA_LIGHT = 199;  // light: 78% (compact dialogs)
+    const int BLUR_BACKGROUND_ALPHA_DARK = 199;   // dark: 78% (compact dialogs)
 }
 ```
 
-X11(dxcb) 与 Wayland 下统一使用该值，不再依赖窗口管理器的模糊能力探测。修改后需要重新编译（以及重新打包安装）才能生效。建议在真机 X11 + KWin 会话中打开「关于」等对话框确认实际观感：偏透就调大、偏实就调小（取值范围 0~255）。
+The same value is used on both X11 (dxcb) and Wayland; the window manager's blur capability is no longer probed. Rebuild (and repackage/install) for changes to take effect. It is recommended to check the result with the About dialog on a real X11 + KWin session: increase the value if it looks too transparent, decrease it if it looks too opaque (range 0~255).
 
-### 打包为 .deb 安装包
+### Packaging
 
-推荐使用此方式，便于安装、卸载与分发。
+This would be recommended if you are using debian-based distros.
 
 ```bash
 sudo apt install cmake fakeroot
@@ -189,85 +186,87 @@ chmod a+x ./build-deb
 ./build-deb -d
 ```
 
-编译完成后可以使用`./build-deb -c`清理中间产物，`.deb`包可以在项目根目录的上级目录找到。
+You may run`./build-deb -c` to execute a cleanup.
 
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
+The `.deb` artifact may be found in the parent directory of project root.
+
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
 <!-- USAGE EXAMPLES -->
-## 如何使用
+## Usage
 
-要使用本库，请同时安装依赖的运行时 [gxde-qt6integration](https://gitee.com/GXDE-OS/gxde-qt6-integration)。
+To use this library, please also install the depended runtime [gxde-qt6integration](https://gitee.com/GXDE-OS/gxde-qt6-integration).
 
-我们目前正在制作一个全新的示例程序。
+Currently we are making a new example project.
 
-_对于使用文档，请参阅我们的[WIKI](https://gitee.com/GXDE-OS/dtk2widget-qt6/wikis)_
+_For documentation, please go to our [WIKI](https://gitee.com/GXDE-OS/dtk2widget-qt6/wikis)_
 
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
 <!-- ROADMAP -->
-## 里程碑
+## Roadmap
 
-**关联的issue**: [(Gitee) #IJJXNG](https://gitee.com/GXDE-OS/dtk2widget/issues/IJJXNG)
+**Related issue**: [(Gitee) #IJJXNG](https://gitee.com/GXDE-OS/dtk2widget/issues/IJJXNG)
 
-- [x] 修复由依赖Qt5 D-Bus引发的崩溃
-- [x] 翻译Qt5/Qt6之间API差异
-- [x] 编写新的Qt集成扩展
-- [ ] 新增文档
-- [ ] 新增示例
+- [x] Fix the crashing caused by depending on Qt5 D-Bus.
+- [x] Translate the API difference in the source between Qt5 and Qt6.
+- [x] Develop the new Qt integration.
+- [ ] Add documentations.
+- [ ] Add new example project.
 
-<p align="right">(<a href="#readme-top">返回顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
 <!-- CONTRIBUTING -->
-## 贡献者
+## Contributing
 
-如果您有兴趣对本项目做出贡献，欢迎fork本仓库并且提交PR。
+If you would like to contribute to this project, you're welcome to fork this repository and open a new pull request.
 
-如果您需要请求新控件，请提交一个新Issue。
+If you want to request new widgets, please open a new Issue.
 
-### 本仓库的贡献者
+### Contributors of This Project
 
 <a href="https://github.com/GXDE-OS/dtk2widget-qt6/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=GXDE-OS/dtk2widget-qt6" />
 </a>
 
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
 <!-- LICENSE -->
-## 许可证
+## License
 
-本项目采取GNU LESSER GENERAL PUBLIC LICENSE Version 3许可。详细请阅读[LICENSE](./LICENSE)。
+This project is licensed under GNU LESSER GENERAL PUBLIC LICENSE Version 3. You may find the license [here](./LICENSE).
 
-<p align="right">(<a href="#readme-top">返回顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 
 <!-- CONTACT -->
-## 联系我们
+## Contact
 
-要联系我们，推荐新建一个Issue并且描述遇到的问题。
+The recommended way to contact us is to fire up a new Issue and describe the problem that you encountered.
 
-<p align="right">(<a href="#readme-top">返回顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
 
 
 <!-- ORIGINAL README -->
-## 原README
+## Original README
 
-本仓库是对深度的DTK2的fork，原README可以在[这里](./README.original.md)找到。
+This project is a fork of Deepin's DTK2, and the original README is available [here](./README.original.md).
 
-<p align="right">(<a href="#readme-top">返回顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 <!-- ACKNOWLEDGMENTS -->
-## 感谢
+## Acknowledgements
 
-感谢所有依赖到的第三方库、Best-README-Template，以及对本项目感兴趣的你。
+Thanks to all the third party libraries we used, Best-README-Template, and YOU.
 
-<p align="right">(<a href="#readme-top">返回顶部</a>)</p>
+<p align="right">(<a href="#readme-top">Back to top</a>)</p>
