@@ -172,8 +172,8 @@
 
 ```cpp
 namespace DIALOG {
-    const int BLUR_BACKGROUND_ALPHA_LIGHT = 128;  // 浅色 50%
-    const int BLUR_BACKGROUND_ALPHA_DARK = 166;   // 深色 65%
+    const int BLUR_BACKGROUND_ALPHA_LIGHT = 199;  // 浅色 78%（紧凑小窗）
+    const int BLUR_BACKGROUND_ALPHA_DARK = 199;   // 深色 78%（紧凑小窗）
 }
 ```
 

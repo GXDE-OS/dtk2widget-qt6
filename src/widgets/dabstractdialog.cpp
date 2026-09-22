@@ -27,7 +27,6 @@
 #include <QLabel>
 #include <QDebug>
 #include <QWindow>
-#include <QGraphicsDropShadowEffect>
 
 #include "danchors.h"
 #include "dialog_constants.h"
@@ -43,10 +42,8 @@ DWIDGET_BEGIN_NAMESPACE
 
 namespace {
 
-// 对话框模糊背景层的透明度。这里不再使用 DWindowManagerHelper::hasBlurWindow()
-// 的平台探测（dxcb 下能探测到模糊，Wayland 下探测不到），而是按当前明暗主题取一个
-// 折中值，保证 X11 与 Wayland 下的观感一致：之前 X11 只有 40% 过于透明，Wayland
-// 则因为再叠加自绘背景而接近 96%，几乎不透明。
+// Compact DTK2 dialogs need a cleaner tint than DTK6's much larger glass
+// surfaces: suppress background colour bleed while keeping blur perceptible.
 quint8 dialogBlurBackgroundAlpha(const QWidget *dialog)
 {
     const bool darkTheme = DThemeManager::instance()->theme(dialog) == QLatin1String("dark");
@@ -67,23 +64,40 @@ void DAbstractDialogPrivate::init()
 {
     D_Q(DAbstractDialog);
 
+    // Keep the same platform-plugin contract as DTK6 dialogs.  In particular,
+    // the top-level window owns its shadow; the dialog only paints the glass
+    // surface inside that window.
+    q->QDialog::setProperty("DAbstractDialog", true);
+
     if (qApp->isDXcbPlatform()) {
         handle = new DPlatformWindowHandle(q, q);
 
         handle->setTranslucentBackground(true);
         handle->setEnableSystemMove(false);
         handle->setEnableSystemResize(false);
-
-        // Aero-inspired soft shadow and rounded corners for native dialogs.
-        handle->setShadowRadius(28);
-        handle->setShadowOffset(QPoint(0, 8));
-        handle->setShadowColor(QColor(0, 0, 0, 70));
-        handle->setWindowRadius(12);
+        handle->setWindowRadius(DIALOG::BORDER_RADIUS);
         handle->setBorderWidth(1);
-        handle->setBorderColor(QColor(0, 0, 0, 28));
+    } else if (DWindowManagerHelper::instance()->hasNoTitlebar()) {
+        handle = new DPlatformWindowHandle(q, q);
+
+        if (!handle->enableBlurWindow()) {
+            handle->setEnableBlurWindow(true);
+        }
+
+        handle->setWindowRadius(DIALOG::BORDER_RADIUS);
+        handle->setBorderWidth(1);
+        q->windowHandle()->setProperty("_d_enableSystemResize", false);
     } else {
         q->setWindowFlags(q->windowFlags() | Qt::FramelessWindowHint);
         q->setBorderColor(QColor(0, 0, 0));
+    }
+
+    // Keep a single restrained platform shadow for elevation.  Do not stack
+    // a QGraphicsDropShadowEffect behind the translucent surface.
+    if (handle) {
+        handle->setShadowRadius(16);
+        handle->setShadowOffset(QPoint(0, 3));
+        handle->setShadowColor(QColor(0, 0, 0, 32));
     }
 
     windowTitle = new QLabel(q);
@@ -101,30 +115,23 @@ void DAbstractDialogPrivate::init()
             || DWindowManagerHelper::instance()->hasBlurWindow();
     if (blurSupported) {
         bgBlurWidget = new DBlurEffectWidget(q);
+        bgBlurWidget->setAccessibleName("DAbstractDialogBlurEffectWidget");
         bgBlurWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
         bgBlurWidget->setBlendMode(DBlurEffectWidget::BehindWindowBlend);
-        bgBlurWidget->setBlurRectXRadius(12);
-        bgBlurWidget->setBlurRectYRadius(12);
+        bgBlurWidget->setFull(true);
+        bgBlurWidget->setBlurRectXRadius(DIALOG::BORDER_RADIUS);
+        bgBlurWidget->setBlurRectYRadius(DIALOG::BORDER_RADIUS);
         QColor dialogBackground = q->backgroundColor();
         if (!dialogBackground.isValid()) {
-            dialogBackground = QColor(255, 255, 255, 200);
+            dialogBackground = q->palette().color(QPalette::Window);
         }
         bgBlurWidget->setMaskColor(dialogBackground);
-        // 显式指定透明度，绕开 DBlurEffectWidget 按平台能力自动在 102/204 之间
-        // 切换的行为，让两种后端拿到同一个折中值。
+        // Use a stronger neutral tint than DTK6's large glass surfaces.  Small
+        // dialogs otherwise pick up too much colour and look grey or muddy.
         bgBlurWidget->setMaskAlpha(dialogBlurBackgroundAlpha(q));
         bgBlurWidget->lower();
         bgBlurWidget->resize(q->size());
         bgBlurWidget->show();
-    }
-
-    if (!handle) {
-        // On non-dxcb platforms, draw the Aero-style shadow ourselves.
-        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(q);
-        shadow->setBlurRadius(28);
-        shadow->setOffset(0, 8);
-        shadow->setColor(QColor(0, 0, 0, 70));
-        q->setGraphicsEffect(shadow);
     }
 
     q->resize(DIALOG::DEFAULT_WIDTH, DIALOG::DEFAULT_HEIGHT);
@@ -551,6 +558,10 @@ void DAbstractDialog::showEvent(QShowEvent *event)
     if (!d->mouseMoved) {
         setDisplayPosition(displayPosition());
     }
+
+    // A derived dialog may finish laying out after its last resize event.
+    if (d->bgBlurWidget)
+        d->bgBlurWidget->resize(size());
 
     QDialog::showEvent(event);
 }

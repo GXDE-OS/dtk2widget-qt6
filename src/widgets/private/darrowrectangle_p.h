@@ -65,10 +65,10 @@ public:
     int m_arrowX = 0;
     int m_arrowY = 0;
 
-    qreal m_shadowBlurRadius = 26;
-    qreal m_shadowDistance = 2;
+    qreal m_shadowBlurRadius = 20;
+    qreal m_shadowDistance = 0;
     qreal m_shadowXOffset = 0;
-    qreal m_shadowYOffset = 6;
+    qreal m_shadowYOffset = 5;
     int m_shadowWidth = 5; //Abandoned
     int m_borderWidth = 1;
     QColor m_borderColor = QColor(0, 0, 0, 255 * 0.1);

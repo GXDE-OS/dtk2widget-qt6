@@ -1090,15 +1090,14 @@ void DArrowRectanglePrivate::init(DArrowRectangle::FloatMode mode)
         m_wmHelper = DWindowManagerHelper::instance();
 
         q->connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, q, static_cast<void (DArrowRectangle::*)()>(&DArrowRectangle::update), Qt::QueuedConnection);
-    } else {
+    } else if (DArrowRectangle::FloatWidget == floatMode) {
         DGraphicsGlowEffect *glowEffect = new DGraphicsGlowEffect;
         glowEffect->setBlurRadius(q->shadowBlurRadius());
         glowEffect->setDistance(m_shadowDistance);
         glowEffect->setXOffset(q->shadowXOffset());
         glowEffect->setYOffset(q->shadowYOffset());
+        glowEffect->setColor(QColor(0, 0, 0, 0.1 * 255));
         q->setGraphicsEffect(glowEffect);
-
-        m_wmHelper = nullptr;
     }
 }
 

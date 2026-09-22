@@ -13,9 +13,9 @@ DWIDGET_BEGIN_NAMESPACE
 DFloatingWidget::DFloatingWidget(QWidget* parent) : DCardWidget(parent),
         m_layout(new QVBoxLayout(this)) {
     setRadius(10);
-    setShadowBlurRadius(28);
-    setShadowColor(QColor(0, 0, 0, 64));
-    setShadowOffset(QPointF(0, 8));
+    setShadowBlurRadius(24);
+    setShadowColor(QColor(0, 0, 0, 36));
+    setShadowOffset(QPointF(0, 4));
 
     m_layout->setContentsMargins(10, 8, 10, 8);
     m_layout->setSpacing(0);

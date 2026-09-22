@@ -12,9 +12,9 @@ DBlurSurface::DBlurSurface(QWidget* parent) : DCardWidget(parent) {
     setRadius(10);
     setLineWidth(1);
     setBackgroundRole(QPalette::Window);
-    setShadowBlurRadius(22);
-    setShadowColor(QColor(0, 0, 0, 44));
-    setShadowOffset(QPointF(0, 5));
+    setShadowBlurRadius(18);
+    setShadowColor(QColor(0, 0, 0, 28));
+    setShadowOffset(QPointF(0, 3));
 
     ensureBlurBackground();
 }

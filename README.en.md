@@ -171,8 +171,8 @@ The opacity of the blurred dialog background (including the About dialog and oth
 
 ```cpp
 namespace DIALOG {
-    const int BLUR_BACKGROUND_ALPHA_LIGHT = 128;  // light: 50%
-    const int BLUR_BACKGROUND_ALPHA_DARK = 166;   // dark: 65%
+    const int BLUR_BACKGROUND_ALPHA_LIGHT = 199;  // light: 78% (compact dialogs)
+    const int BLUR_BACKGROUND_ALPHA_DARK = 199;   // dark: 78% (compact dialogs)
 }
 ```
 
