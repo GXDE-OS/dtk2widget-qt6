@@ -51,6 +51,9 @@ public:
 
     void FollowSystemDefaultTheme();
 
+    bool followSystemTheme() const;
+    void setFollowSystemTheme(bool follow);
+
 public Q_SLOTS:
     void updateQss();
     void updateThemeOnParentChanged(QWidget *widget);

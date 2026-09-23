@@ -26,6 +26,9 @@
 #include <QDBusMessage>
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QDBusVariant>
+#include <QDBusConnectionInterface>
+#include <QGSettings>
 #include <QMessageBox>
 
 #include <DObjectPrivate>
@@ -173,16 +176,217 @@ static void updateWidgetTheme(DThemeManager *manager, QWidget *widget, QWidget *
     }
 }
 
-class DThemeManagerPrivate : public DCORE_NAMESPACE::DObjectPrivate
-{
+// Listen to system dark scheme perference
+class DSystemColorSchemeWatcher : public QObject {
+    Q_OBJECT
+public:
+    enum Scheme : uint {
+        NoPreference = 0,
+        Dark = 1,
+        Light = 2
+    };
+
+    explicit DSystemColorSchemeWatcher(QObject *parent = nullptr)
+            : QObject(parent) {
+        if (QGSettings::isSchemaInstalled("org.gnome.desktop.interface")) {
+            m_gnomeSettings = new QGSettings("org.gnome.desktop.interface",
+                QByteArray(), this);
+            if (m_gnomeSettings->keys().contains(QStringLiteral(
+                    "colorScheme"))) {
+                m_gnomeScheme = readGnomeScheme();
+                connect(m_gnomeSettings, &QGSettings::changed, this,
+                        [this](const QString &key) {
+                    if (key == QLatin1String("colorScheme")) {
+                        updateScheme(m_gnomeScheme, readGnomeScheme(),
+                            GnomeSource);
+                    }
+                });
+            }
+        }
+
+        if (QGSettings::isSchemaInstalled("com.deepin.dde.appearance")) {
+            m_deepinSettings = new QGSettings("com.deepin.dde.appearance",
+                QByteArray(), this);
+            m_deepinScheme = readDeepinScheme();
+            connect(m_deepinSettings, &QGSettings::changed, this,
+                    [this](const QString &key) {
+                if (key == QLatin1String("gtkTheme")) {
+                    updateScheme(m_deepinScheme, readDeepinScheme(),
+                        DeepinSource);
+                }
+            });
+        }
+
+        m_lastSource = m_gnomeScheme != NoPreference ? GnomeSource
+            : DeepinSource;
+
+        QDBusConnection bus = QDBusConnection::sessionBus();
+        if (!bus.isConnected()) {
+            return;
+        }
+
+        bus.connect(QStringLiteral("org.freedesktop.portal.Desktop"),
+            QStringLiteral("/org/freedesktop/portal/desktop"),
+            QStringLiteral("org.freedesktop.portal.Settings"),
+            QStringLiteral("SettingChanged"),
+            this, SLOT(onPortalSettingChanged(QString, QString, QDBusVariant)));
+
+        QDBusMessage msg = QDBusMessage::createMethodCall(
+            QStringLiteral("org.freedesktop.portal.Desktop"),
+            QStringLiteral("/org/freedesktop/portal/desktop"),
+            QStringLiteral("org.freedesktop.portal.Settings"),
+            QStringLiteral("Read"));
+
+        msg << QStringLiteral("org.freedesktop.appearance")
+            << QStringLiteral("color-scheme");
+        const QDBusMessage reply = bus.call(msg, QDBus::Block, 2000);
+
+        if (reply.type() == QDBusMessage::ReplyMessage &&
+                !reply.arguments().isEmpty()) {
+            m_portalScheme = portalValueToScheme(reply.arguments().first());
+        }
+    }
+
+    Scheme scheme() const {
+        const Scheme last = m_lastSource == GnomeSource ? m_gnomeScheme
+            : m_deepinScheme;
+        if (last != NoPreference) {
+            return last;
+        }
+
+        if (m_gnomeScheme != NoPreference) {
+            return m_gnomeScheme;
+        }
+
+        if (m_deepinScheme != NoPreference) {
+            return m_deepinScheme;
+        }
+
+        return m_portalScheme;
+    }
+
+Q_SIGNALS:
+    void schemeChanged();
+
+private Q_SLOTS:
+    void onPortalSettingChanged(const QString &nameSpace, const QString &key,
+            const QDBusVariant &value) {
+        if (nameSpace != QLatin1String("org.freedesktop.appearance") ||
+                key != QLatin1String("color-scheme")) {
+            return;
+        }
+
+        updateScheme(m_portalScheme, portalValueToScheme(
+            QVariant::fromValue(value)), m_lastSource);
+    }
+
+private:
+    enum Source {
+        GnomeSource,
+        DeepinSource
+    };
+
+    void updateScheme(Scheme &source, Scheme value, Source origin) {
+        if (source == value) {
+            return;
+        }
+
+        const Scheme old = scheme();
+        source = value;
+        m_lastSource = origin;
+        if (scheme() != old) {
+            Q_EMIT schemeChanged();
+        }
+    }
+
+    Scheme readGnomeScheme() const {
+        const QString value = m_gnomeSettings->get(QStringLiteral(
+            "colorScheme")).toString();
+        if (value == QLatin1String("prefer-dark")) {
+            return Dark;
+        }
+        if (value == QLatin1String("prefer-light")) {
+            return Light;
+        }
+        return NoPreference;
+    }
+
+    Scheme readDeepinScheme() const {
+        const QString gtkTheme = m_deepinSettings->get(QStringLiteral(
+            "gtkTheme")).toString();
+        if (gtkTheme.isEmpty()) {
+            return NoPreference;
+        }
+        return gtkTheme.contains(QLatin1String("dark"), Qt::CaseInsensitive)
+            ? Dark : Light;
+    }
+
+    static Scheme portalValueToScheme(QVariant value) {
+        // Settings.Read 在旧版 portal 上会返回 v<v<u>>，这里逐层解包
+        while (value.userType() == qMetaTypeId<QDBusVariant>()) {
+            value = value.value<QDBusVariant>().variant();
+        }
+
+        bool ok = false;
+        const uint v = value.toUInt(&ok);
+        if (!ok || v > Light) {
+            return NoPreference;
+        }
+        return static_cast<Scheme>(v);
+    }
+
+    QGSettings *m_gnomeSettings = nullptr;
+    QGSettings *m_deepinSettings = nullptr;
+    Scheme m_gnomeScheme = NoPreference;
+    Scheme m_deepinScheme = NoPreference;
+    Scheme m_portalScheme = NoPreference;
+    Source m_lastSource = GnomeSource;
+};
+
+class DThemeManagerPrivate : public DCORE_NAMESPACE::DObjectPrivate {
     D_DECLARE_PUBLIC(DThemeManager)
 
     QString themeName;
     QMap<QWidget *, QMap<QString, QString> > watchedDynamicPropertys;
 
+    QString requestedTheme;
+    bool followSystem = qEnvironmentVariable("DTK_FOLLOW_SYSTEM_THEME") != QLatin1String("0");
+    DSystemColorSchemeWatcher *schemeWatcher = nullptr;
+
 public:
     DThemeManagerPrivate(DThemeManager *qq)
         : DObjectPrivate(qq) {}
+
+    void ensureSchemeWatcher() {
+        D_Q(DThemeManager);
+        if (schemeWatcher) {
+            return;
+        }
+
+        schemeWatcher = new DSystemColorSchemeWatcher(q);
+        q->connect(schemeWatcher, &DSystemColorSchemeWatcher::schemeChanged, q,
+                [this] {
+            applyRequestedTheme();
+        });
+    }
+
+    void applyRequestedTheme() {
+        QString theme = requestedTheme;
+
+        if (followSystem) {
+            ensureSchemeWatcher();
+
+            const auto scheme = schemeWatcher->scheme();
+            if (scheme != DSystemColorSchemeWatcher::NoPreference) {
+                const bool semi = theme.startsWith(QLatin1String("semi"));
+                theme = QLatin1String(semi ? "semi" : "")
+                    + QLatin1String(scheme == DSystemColorSchemeWatcher::Dark
+                        ? "dark" : "light");
+            }
+        }
+
+        setTheme(theme);
+    }
 
     QString getQssContent(const QString &themeURL) const
     {
@@ -452,7 +656,41 @@ QString DThemeManager::theme(const QWidget *widget, QWidget **baseWidget) const
 void DThemeManager::setTheme(const QString theme)
 {
     D_D(DThemeManager);
-    d->setTheme(theme);
+    d->requestedTheme = theme;
+    d->applyRequestedTheme();
+}
+
+/*!
+ * \~english \brief DThemeManager::followSystemTheme returns whether the application
+ * \~english theme follows the system dark/light preference.
+ *
+ *
+ * \~chinese \brief DThemeManager::followSystemTheme 返回程序主题是否跟随系统的深色/浅色偏好。
+ * \~chinese 默认开启，可通过环境变量 DTK_FOLLOW_SYSTEM_THEME=0 关闭。
+ */
+bool DThemeManager::followSystemTheme() const {
+    D_DC(DThemeManager);
+    return d->followSystem;
+}
+
+/*!
+ * \~english \brief DThemeManager::setFollowSystemTheme sets whether the application
+ * \~english theme follows the system (XDG color-scheme or GXDE GtkTheme) preference.
+ *
+ *
+ * \~chinese \brief DThemeManager::setFollowSystemTheme 设置程序主题是否跟随系统
+ * \~chinese （XDG color-scheme 或 GXDE 外观设置的 GtkTheme，以最后一次改动为准）的深色/浅色偏好。
+ * \~chinese 开启时系统偏好优先于 setTheme() 指定的深浅；系统无偏好时使用 setTheme() 的值。
+ * \~chinese 需要让用户手动切换深浅色的程序应关闭此选项。
+ */
+void DThemeManager::setFollowSystemTheme(bool follow) {
+    D_D(DThemeManager);
+    if (d->followSystem == follow) {
+        return;
+    }
+
+    d->followSystem = follow;
+    d->applyRequestedTheme();
 }
 
 /*!
@@ -640,3 +878,5 @@ void DThemeManager::updateThemeOnParentChanged(QWidget *widget)
 
 
 DWIDGET_END_NAMESPACE
+
+#include "dthememanager.moc"

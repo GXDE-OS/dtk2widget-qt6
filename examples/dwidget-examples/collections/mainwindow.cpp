@@ -84,9 +84,11 @@ MainWindow::MainWindow(QWidget *parent)
     themeManager->setTheme(lightBUtton, "light");
 
     connect(darkButton, &QPushButton::clicked, [ = ] {
+        themeManager->setFollowSystemTheme(false);
         themeManager->setTheme("dark");
     });
     connect(lightBUtton, &QPushButton::clicked, [ = ] {
+        themeManager->setFollowSystemTheme(false);
         themeManager->setTheme("light");
     });
     connect(enableButtons, &QPushButton::clicked, [ = ] {

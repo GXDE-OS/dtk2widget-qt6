@@ -118,12 +118,11 @@ void DLoadingIndicatorPrivate::setLoadingItem(QGraphicsItem *item)
  * \~chinese \param parent 指定了控件的父控件。
  */
 DLoadingIndicator::DLoadingIndicator(QWidget *parent) :
-    QGraphicsView(parent),
-    DObject(*new DLoadingIndicatorPrivate(this))
-{
-    DThemeManager::registerWidget(this);
-
+        QGraphicsView(parent),
+        DObject(*new DLoadingIndicatorPrivate(this)) {
     d_func()->init();
+
+    DThemeManager::registerWidget(this);
 }
 
 DLoadingIndicator::~DLoadingIndicator()
