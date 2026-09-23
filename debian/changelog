@@ -1,3 +1,9 @@
+dtk2widget6 (6:6.3.1) UNRELEASED; urgency=medium
+
+  * 支持深色模式切换
+
+ -- CharOfString <root@charofstring.cc>  Wed, 23 Sep 2026 18:39:02 -0500
+
 dtk2widget6 (6:6.3.0) UNRELEASED; urgency=medium
 
   * 细调对话框模糊样式
