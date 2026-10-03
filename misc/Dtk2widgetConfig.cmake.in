@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(Qt6 COMPONENTS Core Gui Widgets Network Concurrent DBus)
+find_dependency(Dtk6Core)
+
+include("${CMAKE_CURRENT_LIST_DIR}/Dtk2widgetTargets.cmake")
+
+set_and_check(DTK2WIDGET_INCLUDE_DIR "@PACKAGE_DTK2WIDGET_INCLUDE_INSTALL_DIR@")
+set(DTK2WIDGET_TOOL_DIR "@PACKAGE_TOOL_INSTALL_DIR@")
+
+# Please just link Dtk2widget::Dtk2widget；
+# These following are just here to be compactiable w/ old qmake builds's configuration.
+set(Dtk2widget_LIBRARIES Dtk2widget::Dtk2widget)
+set(Dtk2widget_INCLUDE_DIRS "${DTK2WIDGET_INCLUDE_DIR}")
+include_directories("${DTK2WIDGET_INCLUDE_DIR}")
+
+check_required_components(Dtk2widget)

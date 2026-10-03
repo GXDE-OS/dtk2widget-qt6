@@ -110,7 +110,7 @@ This repository is the port of Deepin's classical DTK2 Widget to Qt6, we transla
 
 <!-- GETTING STARTED -->
 ## Getting Started
-This project is built with `qmake6` and then packed with Debian's standard `debuild` process.
+This project is built with `qmake6` (or CMake if you want) and then packed with Debian's standard `debuild` process.
 
 The following instruction is based on GXDE 25.3.
 
@@ -163,6 +163,21 @@ If you only want the library but not the `deb` package, then do the following:
    sudo make install
    ```
 
+#### Building With CMake
+```bash
+sudo apt install cmake ninja-build
+cmake -B build-cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build build-cmake
+sudo cmake --install build-cmake
+```
+
+Available options:
+* `-DBUILD_EXAMPLES=OFF`: Skip the examples.
+* `-DBUILD_TOOLS=OFF`: Skip `dtk-svgc`.
+* `-DDTK_NO_TRANSLATION=ON`
+* `-DDTK_STATIC_TRANSLATION=ON`
+* `-DDTK_STATIC_LIB=ON`.
+
 ### Dialog Transparency
 
 The opacity of the blurred dialog background (including the About dialog and other `DAbstractDialog` subclasses) is defined in `src/widgets/dialog_constants.h`:
@@ -198,6 +213,15 @@ The `.deb` artifact may be found in the parent directory of project root.
 ## Usage
 
 To use this library, please also install the depended runtime [gxde-qt6integration](https://gitee.com/GXDE-OS/gxde-qt6-integration).
+
+To use it in a CMake project:
+
+```cmake
+find_package(Dtk2widget REQUIRED)
+target_link_libraries(your_app PRIVATE Dtk2widget::Dtk2widget)
+```
+
+If QMake: `QT += dtk2widget`, or use `dtk2widget` through pkg-config.
 
 Currently we are making a new example project.
 

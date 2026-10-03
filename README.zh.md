@@ -111,7 +111,7 @@
 
 <!-- GETTING STARTED -->
 ## 开始使用
-本项目基于 `qmake6` 构建，并通过 Debian 标准的 `debuild` 流程打包为 `.deb`。
+本项目基于 `qmake6` 构建（亦可使用 CMake），并通过 Debian 标准的 `debuild` 流程打包为 `.deb`。
 
 以下步骤在 GXDE 25.3 上验证通过。
 
@@ -164,6 +164,21 @@
    sudo make install
    ```
 
+#### 使用 CMake 编译
+```bash
+sudo apt install cmake ninja-build
+cmake -B build-cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build build-cmake
+sudo cmake --install build-cmake
+```
+
+可用选项：
+* `-DBUILD_EXAMPLES=OFF`: 不编译示例
+* `-DBUILD_TOOLS=OFF`: 不编译 `dtk-svgc`
+* `-DDTK_NO_TRANSLATION=ON`
+* `-DDTK_STATIC_TRANSLATION=ON`
+* `-DDTK_STATIC_LIB=ON`
+
 ### 对话框透明度调节
 
 浅色/深色模式下对话框（含「关于」等 `DAbstractDialog` 子类）模糊背景的透明度，定义在 `src/widgets/dialog_constants.h` 中：
@@ -197,6 +212,14 @@ chmod a+x ./build-deb
 ## 如何使用
 
 要使用本库，请同时安装依赖的运行时 [gxde-qt6integration](https://gitee.com/GXDE-OS/gxde-qt6-integration)。
+
+在 CMake 工程中使用：
+```cmake
+find_package(Dtk2widget REQUIRED)
+target_link_libraries(your_app PRIVATE Dtk2widget::Dtk2widget)
+```
+
+在 qmake 工程中使用:`QT += dtk2widget`，或通过`pkg-config`引入。
 
 我们目前正在制作一个全新的示例程序。
 

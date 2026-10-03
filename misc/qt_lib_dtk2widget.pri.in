@@ -1,0 +1,14 @@
+QT.dtk2widget.VERSION = @PROJECT_VERSION@
+QT.dtk2widget.MAJOR_VERSION = @PROJECT_VERSION_MAJOR@
+QT.dtk2widget.MINOR_VERSION = @PROJECT_VERSION_MINOR@
+QT.dtk2widget.PATCH_VERSION = @PROJECT_VERSION_PATCH@
+QT.dtk2widget.name = dtk2widget
+QT.dtk2widget.module = dtk2widget
+QT.dtk2widget.tools = @PRI_TOOLDIR@
+QT.dtk2widget.libs = @PRI_LIBDIR@
+QT.dtk2widget.includes = @PRI_INCLUDEDIR@
+QT.dtk2widget.frameworks =
+QT.dtk2widget.depends = @PRI_DEPENDS@
+QT.dtk2widget.module_config = v2 internal_module
+QT.dtk2widget.DEFINES = 
+QT_MODULES += 
