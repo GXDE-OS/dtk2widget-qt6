@@ -20,6 +20,7 @@
 #ifdef private
 #undef private
 #endif
+#include <QObject>
 #define private public
 #include <QWidget>
 #undef private
