@@ -1,8 +1,9 @@
-dtk2widget6 (6:6.3.3~real6.3.0) UNRELEASED; urgency=medium
+dtk2widget6 (6:6.3.4~real6.3.0) UNRELEASED; urgency=medium
 
   [ CharOfString ]
   * 细调对话框模糊样式
   * 新增CMake支持
+  * 新增对GCC 16的支持
 
   [ gfdgd_xi ]
   * 覆盖源内异常的 6.3.1
