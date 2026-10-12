@@ -1,0 +1,52 @@
+# Maintainer: CharOfString <root@charofstring.cc>
+pkgname=dtk2widget-qt6-git
+pkgver=6.3.4.real6.3.0
+pkgrel=1
+pkgdesc='GXDE DTK2 graphical user interface library, Qt6 port built on DTK6 core'
+arch=('x86_64' 'aarch64')
+url="https://github.com/GXDE-OS/dtk2widget-qt6"
+license=('LGPL-3.0-or-later')
+# 公开头文件 darrowbutton.h 包含 <QStateMachine>，因此 qt6-scxml 是运行依赖
+# The public header darrowbutton.h includes <QStateMachine>, so qt6-scxml stays in depends.
+depends=('dtk6core-git' 'qt6-base' 'qt6-svg' 'qt6-multimedia' 'qt6-scxml'
+         'gsettings-qt6' 'layer-shell-qt' 'librsvg' 'cairo' 'glib2' 'startup-notification'
+         'wayland' 'libx11' 'libxext' 'libxi' 'libxcb' 'xcb-util' 'libgcc' 'libstdc++' 'glibc')
+optdepends=('gxde-qt6integration-git: GXDE style for DTK2 Qt6 applications')
+makedepends=('git' 'qt6-tools' 'qt6-wayland')
+provides=("dtk2widget-qt6=$pkgver")
+# 与 debian/control 的 Breaks 相同：旧版 gxde-wlcom 会被本库触发崩溃
+# Same as the Breaks in debian/control: older gxde-wlcom crashes with this library.
+conflicts=('dtk2widget-qt6' 'gxde-wlcom<1.4.1')
+source=()
+sha512sums=()
+
+# 直接使用 PKGBUILD 所在的 git 仓库作为源码 ・ Build from the git checkout this PKGBUILD lives in.
+_srcroot() {
+  git -C "$startdir" rev-parse --show-toplevel
+}
+
+build() {
+  # dtk_translation.prf 直接调用 lrelease ・ dtk_translation.prf calls plain `lrelease`.
+  export PATH="/usr/lib/qt6/bin:$PATH"
+  mkdir -p build
+  cd build
+  qmake6 "$(_srcroot)/dtkwidget.pro" \
+    PREFIX=/usr \
+    LIB_INSTALL_DIR=/usr/lib \
+    QMAKE_CFLAGS_RELEASE="$CFLAGS" \
+    QMAKE_CXXFLAGS_RELEASE="$CXXFLAGS" \
+    QMAKE_LFLAGS_RELEASE="$LDFLAGS"
+  make
+}
+
+package() {
+  make -C build INSTALL_ROOT="$pkgdir" install
+
+  # 与 debian/rules 相同：qmake 生成的 .pc 依赖 Qt5 的 dtkcore，需改为 dtk6core，
+  # 并显式给出 -L${libdir}
+  # Same as debian/rules: the generated .pc requires Qt5's dtkcore, point it
+  # at dtk6core and pass -L${libdir} explicitly.
+  sed -i -e 's|^Requires: dtkcore$|Requires: dtk6core|' \
+    -e 's|^Libs: -ldtk2widget|Libs: -L${libdir} -ldtk2widget|' \
+    "$pkgdir/usr/lib/pkgconfig/dtk2widget.pc"
+}
