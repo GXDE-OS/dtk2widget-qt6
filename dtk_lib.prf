@@ -10,7 +10,8 @@ CONFIG += ordered
 # 暂时禁用多媒体支持
 DTK_NO_MULTIMEDIA = 1
 
-exists($$_PRO_FILE_PWD_/src) SUBDIRS += src
-exists($$_PRO_FILE_PWD_/tools) SUBDIRS += tools
-exists($$_PRO_FILE_PWD_/tests) SUBDIRS += tests
-exists($$_PRO_FILE_PWD_/examples) SUBDIRS += examples
+# A directory may contain standalone projects without a subdirs project.
+exists($$_PRO_FILE_PWD_/src/src.pro) SUBDIRS += src
+exists($$_PRO_FILE_PWD_/tools/tools.pro) SUBDIRS += tools
+exists($$_PRO_FILE_PWD_/tests/tests.pro) SUBDIRS += tests
+exists($$_PRO_FILE_PWD_/examples/examples.pro) SUBDIRS += examples
