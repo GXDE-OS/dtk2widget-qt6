@@ -174,11 +174,11 @@ void setMenuLayerRole(QWidget* menu) {
         return;
     }
 
-    menu->createWinId();
     if (!isLayerShellActive()) {
         return;  // Now using normal xdg popup
     }
 
+    menu->createWinId();
     QWindow* window = menu->windowHandle();
     if (!window) {
         return;
