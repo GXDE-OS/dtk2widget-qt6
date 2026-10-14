@@ -1,8 +1,8 @@
-dtk2widget6 (6:6.3.5) UNRELEASED; urgency=medium
+dtk2widget6 (6:6.3.6) UNRELEASED; urgency=medium
 
   * 修复标题栏菜单大小异常的问题
 
- -- CharOfString <root@charofstring.cc>  Tuw, 13 Oct 2026 20:35:04 -0500
+ -- CharOfString <root@charofstring.cc>  Tuw, 13 Oct 2026 20:52:22 -0500
 
 dtk2widget6 (6:6.3.4~real6.3.0) UNRELEASED; urgency=medium
 
