@@ -275,6 +275,23 @@ void DMenuEffect::alignPanelToAnchor() {
             const int parentPanelRight = parentLeft + pm->width() - pmm.right();
             winPos.setX(parentPanelRight - sm.left());
         }
+
+        // Fix Qt 6.11+ menu gap.
+        QRect itemRect;
+        const auto acts = pm->actions();
+        for (QAction* a : acts) {
+            if (a->menu() == m_menu) {
+                itemRect = pm->actionGeometry(a);
+                break;
+            }
+        }
+        if (itemRect.isValid()) {
+            const int left = pmm.left() + sm.right();
+            const int right = qMax(left + 1, pm->width() - pmm.right() - sm.left());
+            DMenuWayland::setParentAnchorRect(m_menu,
+                QRect(left, itemRect.top() - sm.top(), right - left,
+                    itemRect.height() + sm.top() + sm.bottom()));
+        }
     } else {
         winPos -= QPoint(sm.left(), sm.top());
     }

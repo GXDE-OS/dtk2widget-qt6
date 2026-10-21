@@ -26,6 +26,7 @@
 
 QT_BEGIN_NAMESPACE
 class QWidget;
+class QRect;
 QT_END_NAMESPACE
 
 DWIDGET_BEGIN_NAMESPACE
@@ -38,6 +39,7 @@ void setMenuLayerRole(QWidget* menu);
 bool placeAtCursor(QWidget* menu, int yOffset = 0);
 bool placeRelativeToWindow(QWidget* menu, int x, int y);
 void setShadowMargins(QWidget* menu, const QMargins &margins);
+void setParentAnchorRect(QWidget* menu, const QRect &rect);
 
 }  // namespace DMenuWayland
 

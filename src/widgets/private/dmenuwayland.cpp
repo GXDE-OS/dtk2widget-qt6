@@ -239,6 +239,25 @@ void setShadowMargins(QWidget* menu, const QMargins& margins) {
         ->setCustomMargins(margins);
 }
 
+void setParentAnchorRect(QWidget* menu, const QRect& rect) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+    if (!menu || !isCurPlatWayland()) {
+        return;
+    }
+
+    QWindow* win = menu->windowHandle();
+    if (!win || !win->handle()) {
+        return;
+    }
+
+    static_cast<QtWaylandClient::QWaylandWindow *>(win->handle())
+        ->setParentControlGeometry(rect);
+#else
+    Q_UNUSED(menu);
+    Q_UNUSED(rect);
+#endif
+}
+
 }  // namespace DMenuWayland
 
 DWIDGET_END_NAMESPACE
