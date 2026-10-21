@@ -1,8 +1,14 @@
+dtk2widget6 (6:6.3.7) UNRELEASED; urgency=medium
+
+  * 修复Qt6.11下子菜单和主菜单直接有gap的问题
+
+ -- CharOfString <root@charofstring.cc>  Tue, 20 Oct 2026 21:19:15 -0500
+
 dtk2widget6 (6:6.3.6) UNRELEASED; urgency=medium
 
   * 修复标题栏菜单大小异常的问题
 
- -- CharOfString <root@charofstring.cc>  Tuw, 13 Oct 2026 20:52:22 -0500
+ -- CharOfString <root@charofstring.cc>  Tue, 13 Oct 2026 20:52:22 -0500
 
 dtk2widget6 (6:6.3.4~real6.3.0) UNRELEASED; urgency=medium
 

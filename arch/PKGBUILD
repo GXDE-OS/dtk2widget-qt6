@@ -1,6 +1,6 @@
 # Maintainer: CharOfString <root@charofstring.cc>
 pkgname=dtk2widget-qt6-git
-pkgver=6.3.5
+pkgver=6.3.7
 pkgrel=1
 pkgdesc='GXDE DTK2 graphical user interface library, Qt6 port built on DTK6 core'
 arch=('x86_64' 'aarch64')
