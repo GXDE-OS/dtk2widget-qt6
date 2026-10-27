@@ -876,6 +876,75 @@ inline QRect operator *(const QRect &rect, qreal scale)
     return QRect(rect.left() * scale, rect.top() * scale, rect.width() * scale, rect.height() * scale);
 }
 
+// 获取窗口当前背景图像的有效副本
+//
+// Qt6 的 QPlatformBackingStore::toImage() 返回的图像并不持有像素缓冲区的所有权，
+// 而是直接包装平台后备存储（如 QXcbBackingStore）内部图像的数据指针。当窗口的
+// 后备存储被重建或销毁后（窗口重建、尺寸调整、部分 xcb 平台插件环境下的启动
+// 阶段），该缓冲区可能已被释放：此时返回图像的元数据（尺寸、格式）仍然“合法”，
+// 但数据指针已失效，直接对其 copy()/scaled() 会触发段错误。
+//
+// 因此使用前必须校验：平台后备存储仍然有效、归属于当前窗口与 QBackingStore，
+// 且图像非空、尺寸与窗口一致。任一条件不满足时返回空图像，调用方应跳过本次
+// 模糊效果（仅绘制蒙版颜色），而非使用失效图像。
+static QImage validWindowImage(QWidget *widget)
+{
+    QWidget *w = widget->window();
+    if (!w)
+        return QImage();
+
+    QBackingStore *bs = w->backingStore();
+    if (!bs)
+        return QImage();
+
+    QPlatformBackingStore *pbs = bs->handle();
+    if (!pbs)
+        return QImage();
+
+    // 平台后备存储已与当前 QBackingStore 失去关联（存储已被销毁，或属于其它
+    // 窗口/窗口的旧副本），其内容必然无效
+    if (pbs->backingStore() != bs)
+        return QImage();
+
+    QWindow *wh = w->windowHandle();
+    if (!wh || pbs->window() != wh)
+        return QImage();
+
+    // TEMP EXPERIMENT: skip warmup paints
+    static QHash<const void *, int> warmup;
+    int n = ++warmup[widget];
+    if (n <= 5) {
+        qDebug() << "validWindowImage: warmup skip" << n << widget;
+        return QImage();
+    }
+
+    QImage img = pbs->toImage();
+    if (img.isNull())
+        return QImage();
+
+    // 尺寸必须与窗口当前大小一致，过期内容直接丢弃
+    const QSize expected(wh->width(), wh->height());
+    if (qAbs(img.width() - expected.width()) > 1
+            || qAbs(img.height() - expected.height()) > 1) {
+        return QImage();
+    }
+
+    qDebug() << "validWindowImage: PASS bs=" << (void*)bs << "pbs=" << (void*)pbs
+             << "link_ok=" << (pbs->backingStore() == bs)
+             << "win_ok=" << (pbs->window() == wh)
+             << "img.size=" << img.size() << "expected=" << expected
+             << "bits=" << (void*)img.constBits() << "fmt=" << int(img.format())
+             << "widget=" << widget << widget->metaObject()->className()
+             << "w=" << w << w->metaObject()->className()
+             << "wh=" << (void*)wh << "bs->window=" << (void*)bs->window()
+             << "bs->size=" << bs->size() << "w->size=" << w->size()
+             << "exposed=" << (wh ? wh->isExposed() : false)
+             << "visible=" << w->isVisible()
+             << "bs_vtable=" << (void*)*(void**)bs;
+
+    return img;
+}
+
 void DBlurEffectWidget::paintEvent(QPaintEvent *event)
 {
     D_D(DBlurEffectWidget);
@@ -924,35 +993,47 @@ void DBlurEffectWidget::paintEvent(QPaintEvent *event)
 
         if (d->sourceImage.isNull()) {
             const QRect &tmp_rect = rect().translated(point_offset).adjusted(-radius, -radius, radius, radius);
+            // 窗口背景无效时（如后备存储已被重建/销毁）仅绘制蒙版颜色，
+            // 避免使用数据指针已失效的图像导致程序崩溃
+            const QImage windowImage = validWindowImage(this);
 
-            d->sourceImage = window()->backingStore()->handle()->toImage().copy(tmp_rect * device_pixel_ratio);
-            d->sourceImage = d->sourceImage.scaledToWidth(d->sourceImage.width() / device_pixel_ratio);
-        } else {
-            QPainter pa_image(&d->sourceImage);
-
-            pa_image.setCompositionMode(QPainter::CompositionMode_Source);
-
-            for (const QRect &rect : event->region().rects()) {
-                if (device_pixel_ratio > 1) {
-                    const QRect &tmp_rect = this->rect().translated(point_offset);
-                    const QImage &area = window()->backingStore()->handle()->toImage().copy(tmp_rect * device_pixel_ratio);
-
-                    pa_image.drawImage(rect.topLeft() + QPoint(radius, radius), area.scaledToWidth(area.width() / device_pixel_ratio).copy(rect));
-                } else {
-                    pa_image.drawImage(rect.topLeft() + QPoint(radius, radius),
-                                       window()->backingStore()->handle()->toImage().copy(rect.translated(point_offset)));
-                }
+            if (!windowImage.isNull()) {
+                d->sourceImage = windowImage.copy(tmp_rect * device_pixel_ratio);
+                if (!d->sourceImage.isNull())
+                    d->sourceImage = d->sourceImage.scaledToWidth(d->sourceImage.width() / device_pixel_ratio);
             }
+        } else {
+            const QImage windowImage = validWindowImage(this);
 
-            pa_image.end();
+            if (!windowImage.isNull()) {
+                QPainter pa_image(&d->sourceImage);
+
+                pa_image.setCompositionMode(QPainter::CompositionMode_Source);
+
+                for (const QRect &rect : event->region().rects()) {
+                    if (device_pixel_ratio > 1) {
+                        const QRect &tmp_rect = this->rect().translated(point_offset);
+                        const QImage &area = windowImage.copy(tmp_rect * device_pixel_ratio);
+
+                        pa_image.drawImage(rect.topLeft() + QPoint(radius, radius), area.scaledToWidth(area.width() / device_pixel_ratio).copy(rect));
+                    } else {
+                        pa_image.drawImage(rect.topLeft() + QPoint(radius, radius),
+                                           windowImage.copy(rect.translated(point_offset)));
+                    }
+                }
+
+                pa_image.end();
+            }
         }
 
-        QImage image = d->sourceImage.copy(paintRect.adjusted(0, 0, 2 * radius, 2 * radius));
+        if (!d->sourceImage.isNull()) {
+            QImage image = d->sourceImage.copy(paintRect.adjusted(0, 0, 2 * radius, 2 * radius));
 
-        QTransform old_transform = pa.transform();
-        pa.translate(paintRect.topLeft() - QPoint(radius, radius));
-        qt_blurImage(&pa, image, radius, false, false);
-        pa.setTransform(old_transform);
+            QTransform old_transform = pa.transform();
+            pa.translate(paintRect.topLeft() - QPoint(radius, radius));
+            qt_blurImage(&pa, image, radius, false, false);
+            pa.setTransform(old_transform);
+        }
     }
 
     pa.fillRect(rect(), maskColor());
