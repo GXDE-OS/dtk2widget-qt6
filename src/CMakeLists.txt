@@ -164,6 +164,7 @@ set(WIDGETS_HEADERS
   widgets/dplatformtheme.h
   widgets/dthememanager.h
   widgets/dapplication.h
+  widgets/dtkwidget_init_p.h
   widgets/dconstants.h
   widgets/dseparatorhorizontal.h
   widgets/dseparatorvertical.h

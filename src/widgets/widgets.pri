@@ -77,6 +77,7 @@ HEADERS += $$PWD/dslider.h\
     $$PWD/dplatformtheme.h \
     $$PWD/dthememanager.h \
     $$PWD/dapplication.h \
+    $$PWD/dtkwidget_init_p.h \
     $$PWD/dconstants.h \
     $$PWD/dseparatorhorizontal.h \
     $$PWD/dseparatorvertical.h \

@@ -51,6 +51,7 @@
 #include "dthememanager.h"
 #include "private/dapplication_p.h"
 #include "daboutdialog.h"
+#include "dtkwidget_init_p.h"
 
 #ifdef Q_OS_UNIX
 #include <QDBusError>
@@ -82,6 +83,51 @@
 DCORE_USE_NAMESPACE
 
 DWIDGET_BEGIN_NAMESPACE
+
+namespace {
+
+// 引导程序/loadDXcbPlugin 为了本进程的 Qt 初始化，会临时改写 QT_QPA_PLATFORM
+// 等环境变量；这些变量会遗传给子进程，导致 dtk 子程序（如 gxde-wallpaper-chooser）
+// 丢失 D-XCB 平台或 dlight2 样式。这里记录改写前的值，DApplication 构造完成
+// （Qt 已读取完平台/样式）后再恢复，保证子进程看到的环境与终端启动时一致。
+struct EnvVarBackup
+{
+    bool valid = false;
+    bool wasSet = false;
+    QByteArray value;
+};
+
+EnvVarBackup g_qpaPlatformBackup;
+EnvVarBackup g_dxcbFakeNameBackup;
+EnvVarBackup g_dwaylandFakeNameBackup;
+
+void backupEnvVar(EnvVarBackup &backup, const char *name)
+{
+    if (backup.valid) {
+        return;
+    }
+
+    backup.valid = true;
+    backup.wasSet = qEnvironmentVariableIsSet(name);
+    if (backup.wasSet) {
+        backup.value = qgetenv(name);
+    }
+}
+
+void restoreEnvVar(const EnvVarBackup &backup, const char *name)
+{
+    if (!backup.valid) {
+        return;
+    }
+
+    if (backup.wasSet) {
+        qputenv(name, backup.value);
+    } else {
+        qunsetenv(name);
+    }
+}
+
+}  // namespace
 
 DApplicationPrivate::DApplicationPrivate(DApplication *q) :
     DObjectPrivate(q)
@@ -391,10 +437,14 @@ DApplication::DApplication(int &argc, char **argv) :
     QApplication(argc, argv),
     DObject(*new DApplicationPrivate(this))
 {
-    qputenv("QT_QPA_PLATFORM", QByteArray());
-    // 通过读取 QT_STYLE_OVERRIDE_BAK 来还原原来 QT_STYLE_OVERRIDE 的设置
-    qputenv("QT_STYLE_OVERRIDE", qgetenv("QT_STYLE_OVERRIDE_BAK_c80071c7-853e-4a3f-a27d-4145ae662bb9"));
-    qputenv("QT_STYLE_OVERRIDE_BAK", QByteArray());
+    // Qt 已完成平台插件与样式的初始化，把本库临时改写的环境变量还原。
+    // 注意不能像以前那样把它们设成空字符串：空值会遗传给子进程，且子进程的
+    // dtk2widget 引导程序（setenv(..., overwrite=0)）会认为“已设置”，从而
+    // 既丢 D-XCB 又丢 dlight2（表现为双标题栏 + chameleon 样式）。
+    Private::restoreStyleOverride();
+    restoreEnvVar(g_qpaPlatformBackup, "QT_QPA_PLATFORM");
+    restoreEnvVar(g_dxcbFakeNameBackup, "DXCB_FAKE_PLATFORM_NAME_XCB");
+    restoreEnvVar(g_dwaylandFakeNameBackup, "DWAYLAND_FAKE_PLATFORM_NAME_WAYLAND");
 
     // FIXME: fix bug in nvidia prime workaround, do not know effoct, must test more!!!
     // 在龙芯和申威上，xcb插件中加载glx相关库（r600_dri.so等）会额外耗时1.xs（申威应该更长）
@@ -644,6 +694,11 @@ bool DApplication::isWayland()
  */
 bool DApplication::loadDXcbPlugin()
 {
+    // 记录改写前的环境，供 DApplication 构造函数在 Qt 初始化完成后还原
+    backupEnvVar(g_qpaPlatformBackup, "QT_QPA_PLATFORM");
+    backupEnvVar(g_dxcbFakeNameBackup, "DXCB_FAKE_PLATFORM_NAME_XCB");
+    backupEnvVar(g_dwaylandFakeNameBackup, "DWAYLAND_FAKE_PLATFORM_NAME_WAYLAND");
+
     // 处理
     /*if (DApplication::isWayland() && qgetenv("XDG_SESSION_DESKTOP") == "gxde-wayland") {
         qputenv("XDG_SESSION_TYPE", "xwayland");
@@ -665,13 +720,6 @@ bool DApplication::loadDXcbPlugin()
             }
         }
     }*/
-
-    // 设置主题为 dlight 以跳过调用 dde-qt5integration 来解决 dtk2 关闭过程中异常崩溃的问题
-    // 注：必须在 QApplication 对象创建前设置该环境变量，否则依然会调用 dde-qt5integration
-    //  而非 gxde-qt5integration
-    /*qputenv("QT_STYLE_OVERRIDE_BAK_c80071c7-853e-4a3f-a27d-4145ae662bb9",
-            qgetenv("QT_STYLE_OVERRIDE"));  // 通过设置 QT_STYLE_OVERRIDE_BAK 来备份原来的设置
-    qputenv("QT_STYLE_OVERRIDE", "dlight");*/
 
     if (isWayland()) {
         // 如果是 Wayland 则使用 dwayland 插件
