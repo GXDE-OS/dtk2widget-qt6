@@ -252,6 +252,7 @@ set(WIDGETS_HEADERS
 
 set(WIDGETS_SOURCES
   widgets/dabstractdialog.cpp
+  widgets/dreorderlistwidget.cpp
   widgets/dinputdialog.cpp
   widgets/daboutdialog.cpp
   widgets/dsettingsdialog.cpp
