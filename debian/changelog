@@ -1,3 +1,11 @@
+dtk2widget6 (6:6.3.9) UNRELEASED; urgency=medium
+
+  * 修复 DBlurEffectWidget 在窗口绘制期间抓取窗口背景图返回悬空指针导致的崩溃
+    （看图程序打开图片闪退）
+  * 修复 DReorderListWidget 在 QT_NO_KEYWORDS 下无法编译的问题
+
+ -- shenmo <shenmo@spark-app.store>  Mon, 09 Nov 2026 21:13:34 +0800
+
 dtk2widget6 (6:6.3.8) UNRELEASED; urgency=medium
 
   * 修复 DApplication 构造时把 QT_QPA_PLATFORM、QT_STYLE_OVERRIDE 等环境变量
