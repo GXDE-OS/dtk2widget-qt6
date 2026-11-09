@@ -26,7 +26,6 @@
 #include <QPainterPath>
 #include <QBackingStore>
 #include <QPaintEvent>
-#include <QDebug>
 
 #include <qpa/qplatformbackingstore.h>
 
@@ -876,18 +875,19 @@ inline QRect operator *(const QRect &rect, qreal scale)
     return QRect(rect.left() * scale, rect.top() * scale, rect.width() * scale, rect.height() * scale);
 }
 
-// 获取窗口当前背景图像的有效副本
+// 获取窗口当前背景图像的安全快照
 //
-// Qt6 的 QPlatformBackingStore::toImage() 返回的图像并不持有像素缓冲区的所有权，
-// 而是直接包装平台后备存储（如 QXcbBackingStore）内部图像的数据指针。当窗口的
-// 后备存储被重建或销毁后（窗口重建、尺寸调整、部分 xcb 平台插件环境下的启动
-// 阶段），该缓冲区可能已被释放：此时返回图像的元数据（尺寸、格式）仍然“合法”，
-// 但数据指针已失效，直接对其 copy()/scaled() 会触发段错误。
+// Qt 6 的 QXcbBackingStore::toImage() 在窗口绘制过程中被调用时并不可靠：此时
+// 后备存储图像上有活动的 QPainter，QImage 的拷贝构造会触发一次深拷贝，而
+// toImage() 只返回包装了这次**临时**深拷贝数据指针的 QImage；函数返回时临时图像
+// 即被销毁，指针随之悬空，调用方紧接着 copy()/scaled() 就会读到已释放内存而崩溃
+// （看图程序打开图片时闪退正是这个原因）。
 //
-// 因此使用前必须校验：平台后备存储仍然有效、归属于当前窗口与 QBackingStore，
-// 且图像非空、尺寸与窗口一致。任一条件不满足时返回空图像，调用方应跳过本次
-// 模糊效果（仅绘制蒙版颜色），而非使用失效图像。
-static QImage validWindowImage(QWidget *widget)
+// 因此这里不再使用 toImage()，而是从平台后备存储的 paintDevice() 取正在绘制的
+// 图像，再 copy() 出一份拥有自身像素数据的快照：QImage::copy() 会分配独立的
+// 缓冲区，生命周期与窗口后备存储无关，绘制期间读取也是安全的。paintDevice()
+// 不是图像（或还未创建）时返回空图像，调用方跳过本帧模糊、只绘制蒙版颜色。
+static QImage windowImageSnapshot(QWidget *widget)
 {
     QWidget *w = widget->window();
     if (!w)
@@ -901,48 +901,25 @@ static QImage validWindowImage(QWidget *widget)
     if (!pbs)
         return QImage();
 
-    // 平台后备存储已与当前 QBackingStore 失去关联（存储已被销毁，或属于其它
-    // 窗口/窗口的旧副本），其内容必然无效
-    if (pbs->backingStore() != bs)
+    QImage *windowImage = dynamic_cast<QImage *>(pbs->paintDevice());
+    if (!windowImage || windowImage->isNull())
         return QImage();
 
-    QWindow *wh = w->windowHandle();
-    if (!wh || pbs->window() != wh)
+    QImage snapshot = windowImage->copy();
+    if (snapshot.isNull())
         return QImage();
 
-    // TEMP EXPERIMENT: skip warmup paints
-    static QHash<const void *, int> warmup;
-    int n = ++warmup[widget];
-    if (n <= 5) {
-        qDebug() << "validWindowImage: warmup skip" << n << widget;
-        return QImage();
+    // 窗口刚改变大小时后备存储可能还没跟上，尺寸不一致说明这一帧内容过期。
+    // 后备存储图像尺寸是设备像素，高 DPI 下要乘 devicePixelRatio。
+    if (QWindow *wh = w->windowHandle()) {
+        const qreal dpr = wh->devicePixelRatio();
+        const QSize expected(qRound(wh->width() * dpr), qRound(wh->height() * dpr));
+        if (qAbs(snapshot.width() - expected.width()) > 1
+                || qAbs(snapshot.height() - expected.height()) > 1)
+            return QImage();
     }
 
-    QImage img = pbs->toImage();
-    if (img.isNull())
-        return QImage();
-
-    // 尺寸必须与窗口当前大小一致，过期内容直接丢弃
-    const QSize expected(wh->width(), wh->height());
-    if (qAbs(img.width() - expected.width()) > 1
-            || qAbs(img.height() - expected.height()) > 1) {
-        return QImage();
-    }
-
-    qDebug() << "validWindowImage: PASS bs=" << (void*)bs << "pbs=" << (void*)pbs
-             << "link_ok=" << (pbs->backingStore() == bs)
-             << "win_ok=" << (pbs->window() == wh)
-             << "img.size=" << img.size() << "expected=" << expected
-             << "bits=" << (void*)img.constBits() << "fmt=" << int(img.format())
-             << "widget=" << widget << widget->metaObject()->className()
-             << "w=" << w << w->metaObject()->className()
-             << "wh=" << (void*)wh << "bs->window=" << (void*)bs->window()
-             << "bs->size=" << bs->size() << "w->size=" << w->size()
-             << "exposed=" << (wh ? wh->isExposed() : false)
-             << "visible=" << w->isVisible()
-             << "bs_vtable=" << (void*)*(void**)bs;
-
-    return img;
+    return snapshot;
 }
 
 void DBlurEffectWidget::paintEvent(QPaintEvent *event)
@@ -993,9 +970,8 @@ void DBlurEffectWidget::paintEvent(QPaintEvent *event)
 
         if (d->sourceImage.isNull()) {
             const QRect &tmp_rect = rect().translated(point_offset).adjusted(-radius, -radius, radius, radius);
-            // 窗口背景无效时（如后备存储已被重建/销毁）仅绘制蒙版颜色，
-            // 避免使用数据指针已失效的图像导致程序崩溃
-            const QImage windowImage = validWindowImage(this);
+            // 取不到有效的窗口背景图时跳过模糊，仅绘制蒙版颜色
+            const QImage windowImage = windowImageSnapshot(this);
 
             if (!windowImage.isNull()) {
                 d->sourceImage = windowImage.copy(tmp_rect * device_pixel_ratio);
@@ -1003,7 +979,7 @@ void DBlurEffectWidget::paintEvent(QPaintEvent *event)
                     d->sourceImage = d->sourceImage.scaledToWidth(d->sourceImage.width() / device_pixel_ratio);
             }
         } else {
-            const QImage windowImage = validWindowImage(this);
+            const QImage windowImage = windowImageSnapshot(this);
 
             if (!windowImage.isNull()) {
                 QPainter pa_image(&d->sourceImage);
