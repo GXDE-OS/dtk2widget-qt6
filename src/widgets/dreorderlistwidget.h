@@ -30,7 +30,7 @@ class DReorderListWidget : public QListWidget
 public:
     explicit DReorderListWidget(QWidget *parent = nullptr);
 
-signals:
+Q_SIGNALS:
     void reordered();
     void deleteRequested(const QList<int> &rows);
     void renameRequested(int row);
