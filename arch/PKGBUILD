@@ -1,5 +1,5 @@
 # Maintainer: CharOfString <root@charofstring.cc>
-pkgname=dtk2widget-qt6-git
+pkgname=dtk2widget-qt6
 pkgver=6.3.9
 pkgrel=1
 pkgdesc='GXDE DTK2 graphical user interface library, Qt6 port built on DTK6 core'
@@ -8,15 +8,16 @@ url="https://github.com/GXDE-OS/dtk2widget-qt6"
 license=('LGPL-3.0-or-later')
 # 公开头文件 darrowbutton.h 包含 <QStateMachine>，因此 qt6-scxml 是运行依赖
 # The public header darrowbutton.h includes <QStateMachine>, so qt6-scxml stays in depends.
-depends=('dtk6core-git' 'qt6-base' 'qt6-svg' 'qt6-multimedia' 'qt6-scxml'
+depends=('gxde-dtk6core' 'qt6-base' 'qt6-svg' 'qt6-multimedia' 'qt6-scxml'
          'gsettings-qt6' 'layer-shell-qt' 'librsvg' 'cairo' 'glib2' 'startup-notification'
          'wayland' 'libx11' 'libxext' 'libxi' 'libxcb' 'xcb-util' 'libgcc' 'libstdc++' 'glibc')
-optdepends=('gxde-qt6integration-git: GXDE style for DTK2 Qt6 applications')
+optdepends=('gxde-qt6integration: GXDE style for DTK2 Qt6 applications')
 makedepends=('git' 'qt6-tools' 'qt6-wayland')
-provides=("dtk2widget-qt6=$pkgver")
+provides=("dtk2widget-qt6-git=$pkgver")
 # 与 debian/control 的 Breaks 相同：旧版 gxde-wlcom 会被本库触发崩溃
 # Same as the Breaks in debian/control: older gxde-wlcom crashes with this library.
-conflicts=('dtk2widget-qt6' 'gxde-wlcom<1.4.1')
+conflicts=('gxde-wlcom<1.4.1' 'dtk2widget-qt6-git')
+replaces=('dtk2widget-qt6-git')
 source=()
 sha512sums=()
 
