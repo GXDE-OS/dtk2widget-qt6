@@ -25,6 +25,10 @@
 #include <QResizeEvent>
 #include <QWidgetAction>
 
+// Qt 6.12.1 起 qplatformwindow_p.h 会引入 <any>，必须在把 private 定义为 public 之前
+// 包含标准库头文件，否则 libstdc++ 会报 "redeclared with different access"
+#include <any>
+
 #define private public
 #ifndef slots
 #define slots Q_SLOTS
