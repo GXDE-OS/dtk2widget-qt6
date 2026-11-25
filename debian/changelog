@@ -1,3 +1,9 @@
+dtk2widget6 (6:6.3.10) UNRELEASED; urgency=medium
+
+  * 修复在 Qt 6.12.1 下无法编译的问题
+
+ -- CharOfString <root@charofstring.cc>  Wed, 25 Nov 2026 06:12:15 -0600
+
 dtk2widget6 (6:6.3.9) UNRELEASED; urgency=medium
 
   * 修复 DBlurEffectWidget 在窗口绘制期间抓取窗口背景图返回悬空指针导致的崩溃
